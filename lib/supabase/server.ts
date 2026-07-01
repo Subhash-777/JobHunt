@@ -9,30 +9,26 @@ export async function createClient() {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    const handler: ProxyHandler<any> = {
-      get(target, prop) {
-        if (prop === 'then') {
-          const dataProxy = new Proxy([], {
-            get(t, p) {
-              if (p === 'user') return null;
-              const val = (t as any)[p];
-              if (typeof val === 'function') return val.bind(t);
-              return val;
-            }
-          });
-          return (resolve: any) =>
-            resolve({
-              data: dataProxy,
-              error: { message: 'Supabase URL and Anon Key must be configured in Vercel environment variables.' }
-            });
-        }
-        return new Proxy(() => {}, handler);
-      },
-      apply(target, thisArg, argumentsList) {
-        return new Proxy(() => {}, handler);
+    const queryChain = {
+      select: () => queryChain,
+      eq: () => queryChain,
+      textSearch: () => queryChain,
+      order: () => queryChain,
+      limit: () => queryChain,
+      maybeSingle: () => Promise.resolve({ data: null, error: null }),
+      then: (resolve: any) =>
+        resolve({
+          data: [],
+          error: { message: 'Supabase URL and Anon Key must be configured in Vercel environment variables.' }
+        })
+    } as any;
+
+    return {
+      from: () => queryChain,
+      auth: {
+        getUser: () => Promise.resolve({ data: { user: null }, error: null })
       }
-    };
-    return new Proxy({}, handler) as any;
+    } as any;
   }
 
   return createServerClient(
