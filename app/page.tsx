@@ -49,7 +49,7 @@ export default async function Home({
       if (profile) {
         const { getOrComputeFitScore } = await import('@/lib/intelligence/fit-score');
         jobsWithScores = await Promise.all(
-          jobs.map(async (job) => {
+          jobs.map(async (job: any) => {
             const scoreObj = await getOrComputeFitScore(job, profile, supabase, false);
             return {
               ...job,

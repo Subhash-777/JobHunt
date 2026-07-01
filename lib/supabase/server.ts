@@ -5,9 +5,31 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 export async function createClient() {
   const cookieStore = await cookies();
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    const handler: ProxyHandler<any> = {
+      get(target, prop) {
+        if (prop === 'then') {
+          return (resolve: any) =>
+            resolve({
+              data: { user: null },
+              error: { message: 'Supabase URL and Anon Key must be configured in Vercel environment variables.' }
+            });
+        }
+        return new Proxy(() => {}, handler);
+      },
+      apply(target, thisArg, argumentsList) {
+        return new Proxy(() => {}, handler);
+      }
+    };
+    return new Proxy({}, handler) as any;
+  }
+
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {

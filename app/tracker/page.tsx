@@ -22,7 +22,7 @@ export default async function TrackerPage() {
     console.error('Error fetching tracker saved jobs:', error);
   }
 
-  const validSavedJobs = (savedJobs || []).filter(sj => sj.jobs !== null);
+  const validSavedJobs = (savedJobs || []).filter((sj: any) => sj.jobs !== null);
 
   return <TrackerClient initialSavedJobs={validSavedJobs} />;
 }

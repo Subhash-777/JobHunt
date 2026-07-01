@@ -23,7 +23,7 @@ export default async function SavedPage() {
   }
 
   // Filter out any entries where the referenced job might be missing/deleted
-  const validSavedJobs = (savedJobs || []).filter(sj => sj.jobs !== null);
+  const validSavedJobs = (savedJobs || []).filter((sj: any) => sj.jobs !== null);
 
   return <SavedJobsClient initialSavedJobs={validSavedJobs} />;
 }
