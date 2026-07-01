@@ -12,9 +12,17 @@ export async function createClient() {
     const handler: ProxyHandler<any> = {
       get(target, prop) {
         if (prop === 'then') {
+          const dataProxy = new Proxy([], {
+            get(t, p) {
+              if (p === 'user') return null;
+              const val = (t as any)[p];
+              if (typeof val === 'function') return val.bind(t);
+              return val;
+            }
+          });
           return (resolve: any) =>
             resolve({
-              data: { user: null },
+              data: dataProxy,
               error: { message: 'Supabase URL and Anon Key must be configured in Vercel environment variables.' }
             });
         }

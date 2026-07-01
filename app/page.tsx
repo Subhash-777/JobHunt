@@ -33,31 +33,45 @@ export default async function Home({
   // Order by posting date for now (intelligence ranking applies later)
   query = query.order('posted_at', { ascending: false }).limit(50);
 
-  const { data: jobs, error } = await query;
+  let jobs: any[] | null = null;
+  let error: any = null;
+
+  try {
+    const res = await query;
+    jobs = res.data;
+    error = res.error;
+  } catch (err: any) {
+    console.error('Failed to load jobs from Supabase:', err);
+    error = { message: err.message || 'Failed to connect to the database. The database may be paused.' };
+  }
 
   // Retrieve user session and compute/fetch fit scores
   let jobsWithScores: any[] = [];
   if (jobs && jobs.length > 0) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
 
-      if (profile) {
-        const { getOrComputeFitScore } = await import('@/lib/intelligence/fit-score');
-        jobsWithScores = await Promise.all(
-          jobs.map(async (job: any) => {
-            const scoreObj = await getOrComputeFitScore(job, profile, supabase, false);
-            return {
-              ...job,
-              fitScore: scoreObj?.score ?? 50
-            };
-          })
-        );
+        if (profile) {
+          const { getOrComputeFitScore } = await import('@/lib/intelligence/fit-score');
+          jobsWithScores = await Promise.all(
+            jobs.map(async (job: any) => {
+              const scoreObj = await getOrComputeFitScore(job, profile, supabase, false);
+              return {
+                ...job,
+                fitScore: scoreObj?.score ?? 50
+              };
+            })
+          );
+        }
       }
+    } catch (err) {
+      console.error('Failed to retrieve user profile or fit scores:', err);
     }
   }
 
