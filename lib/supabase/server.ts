@@ -32,7 +32,7 @@ export async function createClient() {
 // For use in background jobs/scripts ONLY. Never use in user-facing routes.
 export function supabaseAdmin() {
   return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || ''
   );
 }
