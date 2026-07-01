@@ -1,0 +1,73 @@
+name: Ingestion Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      tier:
+        description: 'Tier to run (0 for all, 1 for API, 2 for light scrape, 3 for heavy scrape)'
+        required: true
+        default: '0'
+        type: choice
+        options:
+          - '0'
+          - '1'
+          - '2'
+          - '3'
+  schedule:
+    # Tier 1: Every 2 hours (API only)
+    - cron: '0 */2 * * *'
+    # Tier 2: Every 4 hours (Cheerio/BS4)
+    - cron: '30 */4 * * *'
+    # Tier 3: Every 6 hours (Playwright/JobSpy)
+    - cron: '15 */6 * * *'
+
+jobs:
+  run-ingestion:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup Python environment and JobSpy
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install pandas python-jobspy
+
+      - name: Install Playwright browsers (Tier 3 only)
+        run: npx playwright install chromium
+
+      - name: Run Ingestion
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          # Determine the tier from the cron schedule or manual input
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            TIER=${{ github.event.inputs.tier }}
+          elif [ "${{ github.event.schedule }}" == "0 */2 * * *" ]; then
+            TIER=1
+          elif [ "${{ github.event.schedule }}" == "30 */4 * * *" ]; then
+            TIER=2
+          elif [ "${{ github.event.schedule }}" == "15 */6 * * *" ]; then
+            TIER=3
+          else
+            TIER=0
+          fi
+          
+          echo "Running Ingestion for Tier: $TIER"
+          npx tsx scripts/ingest/run-all.ts --tier=$TIER
