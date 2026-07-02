@@ -23,7 +23,27 @@ export function JobDetailDrawer({ isOpen, onClose, job }: JobDetailDrawerProps) 
   const [loading, setLoading] = useState(false);
   const [fitScore, setFitScore] = useState<any>(null);
   const [fitLoading, setFitLoading] = useState(false);
+  const [tailoringResume, setTailoringResume] = useState(false);
+  const [tailoredResume, setTailoredResume] = useState<string | null>(null);
   const supabase = createClient();
+
+  const handleTailorResume = async () => {
+    setTailoringResume(true);
+    try {
+      const res = await fetch('/api/ai/tailor-resume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId: job.id })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setTailoredResume(data.markdown);
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setTailoringResume(false);
+    }
+  };
 
   useEffect(() => {
     if (!isOpen || !job) return;
@@ -387,16 +407,47 @@ export function JobDetailDrawer({ isOpen, onClose, job }: JobDetailDrawerProps) 
             <CalendarQuickAdd job={job} />
           </div>
 
-          <a
-            href={job.apply_url || job.source_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={handleApplyClick}
-            className="w-full bg-accent-500 hover:bg-accent-600 text-white text-center py-3 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-accent-500/10 hover:shadow-accent-500/20"
-          >
-            Apply Directly
-            <ExternalLink size={16} />
-          </a>
+          <div className="flex flex-col gap-2 mt-2">
+            {!tailoredResume ? (
+              <button
+                onClick={handleTailorResume}
+                disabled={tailoringResume}
+                className="w-full bg-accent-500/10 hover:bg-accent-500/20 text-accent-400 border border-accent-500/30 text-center py-2.5 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {tailoringResume ? 'Generating Tailored Resume...' : 'Tailor Resume for this Job'}
+                {!tailoringResume && <Sparkles size={16} />}
+              </button>
+            ) : (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(tailoredResume);
+                    alert('Copied to clipboard!');
+                  }}
+                  className="flex-1 bg-white/10 hover:bg-white/20 text-white text-center py-2 rounded-lg font-semibold text-xs transition-all"
+                >
+                  Copy Markdown
+                </button>
+                <button
+                  onClick={() => setTailoredResume(null)}
+                  className="px-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 py-2 rounded-lg font-semibold text-xs transition-all"
+                >
+                  Close
+                </button>
+              </div>
+            )}
+
+            <a
+              href={job.apply_url || job.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={handleApplyClick}
+              className="w-full bg-accent-500 hover:bg-accent-600 text-white text-center py-3 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-accent-500/10 hover:shadow-accent-500/20"
+            >
+              Apply Directly
+              <ExternalLink size={16} />
+            </a>
+          </div>
         </div>
       </div>
     </Drawer>
