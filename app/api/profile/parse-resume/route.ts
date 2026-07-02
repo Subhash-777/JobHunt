@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
 import { supabaseRoute } from '@/lib/supabase/route-handler';
 import { callAICascade } from '@/lib/ai/cascade';
-// pdf-parse doesn't have official types that always work nicely, so we require it
-const pdfParse = require('pdf-parse');
-
 export async function POST(request: Request) {
+  // Require dynamically inside the function to prevent Next.js build-time collection errors
+  const pdfParse = require('pdf-parse');
   try {
     const supabase = await supabaseRoute();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
