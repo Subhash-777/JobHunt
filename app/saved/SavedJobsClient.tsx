@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Bookmark, Trash2, Folder, ExternalLink, Calendar, PlusCircle } from 'lucide-react';
-import { NormalizedJob } from '@/scripts/ingest/types';
+import { motion } from 'framer-motion';
+import { Bookmark, Trash2, Folder, ExternalLink, Calendar, CheckSquare, Square, ArrowRight } from 'lucide-react';
 import { Drawer } from '@/components/shared/Drawer';
+import { toast } from 'sonner';
 
 interface SavedJob {
   id: string;
@@ -34,6 +35,7 @@ export function SavedJobsClient({ initialSavedJobs }: SavedJobsClientProps) {
   const [savedJobs, setSavedJobs] = useState<SavedJob[]>(initialSavedJobs);
   const [activeFolder, setActiveFolder] = useState<string>('all');
   const [selectedJob, setSelectedJob] = useState<SavedJob | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
   const filteredJobs = savedJobs.filter((sj) => {
@@ -50,20 +52,19 @@ export function SavedJobsClient({ initialSavedJobs }: SavedJobsClientProps) {
         body: JSON.stringify({ jobId, folder: newFolder }),
       });
       if (res.ok) {
-        const updated = await res.json();
         setSavedJobs(prev =>
           prev.map(sj => (sj.job_id === jobId ? { ...sj, folder: newFolder } : sj))
         );
+        toast.success(`Moved to ${newFolder.toUpperCase()}`);
       }
     } catch (err) {
-      console.error(err);
+      toast.error('Failed to update stage.');
     } finally {
       setIsUpdating(null);
     }
   };
 
   const handleRemove = async (jobId: string) => {
-    if (!confirm('Are you sure you want to remove this job from your saved list?')) return;
     try {
       const res = await fetch(`/api/saved?jobId=${jobId}`, {
         method: 'DELETE',
@@ -73,108 +74,150 @@ export function SavedJobsClient({ initialSavedJobs }: SavedJobsClientProps) {
         if (selectedJob?.job_id === jobId) {
           setSelectedJob(null);
         }
+        toast.success('Removed from saved jobs.');
       }
     } catch (err) {
-      console.error(err);
+      toast.error('Failed to remove saved job.');
+    }
+  };
+
+  const toggleSelect = (jobId: string) => {
+    setSelectedIds(prev =>
+      prev.includes(jobId) ? prev.filter(id => id !== jobId) : [...prev, jobId]
+    );
+  };
+
+  const handleBulkMove = async (targetFolder: string) => {
+    if (selectedIds.length === 0) return;
+    try {
+      await Promise.all(
+        selectedIds.map(jobId =>
+          fetch('/api/saved', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jobId, folder: targetFolder }),
+          })
+        )
+      );
+      setSavedJobs(prev =>
+        prev.map(sj => (selectedIds.includes(sj.job_id) ? { ...sj, folder: targetFolder } : sj))
+      );
+      setSelectedIds([]);
+      toast.success(`Moved ${selectedIds.length} jobs to ${targetFolder.toUpperCase()}`);
+    } catch (err) {
+      toast.error('Bulk move failed.');
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-white flex items-center gap-2 mb-2">
-          <Bookmark className="text-accent-500" />
-          Job Shortlists & Tracking
-        </h1>
-        <p className="text-gray-400">
-          Manage your pipeline from initial bookmark to interviews and offers.
-        </p>
-      </header>
+    <div className="w-full space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border-subtle">
+        <div>
+          <h1 className="text-2xl font-bold text-text-primary flex items-center gap-2">
+            <Bookmark className="w-6 h-6 text-accent-500" />
+            <span>Saved Jobs & Shortlists</span>
+          </h1>
+          <p className="text-xs text-text-secondary mt-1">
+            Review bookmarked roles, filter by pipeline stage, or perform bulk updates.
+          </p>
+        </div>
+      </div>
 
-      {/* Tabs */}
-      <div className="flex flex-wrap gap-2 mb-8 border-b border-white/5 pb-4">
-        {FOLDERS.map((f) => (
-          <button
-            key={f.id}
-            onClick={() => setActiveFolder(f.id)}
-            className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-150 ${
-              activeFolder === f.id
-                ? 'bg-accent-500 text-white shadow-md shadow-accent-500/10'
-                : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
-            }`}
-          >
-            {f.label} ({f.id === 'all' ? savedJobs.length : savedJobs.filter(sj => sj.folder === f.id).length})
-          </button>
-        ))}
+      {/* Sliding Tabs */}
+      <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 no-scrollbar">
+        {FOLDERS.map((f) => {
+          const isActive = activeFolder === f.id;
+          const count = f.id === 'all' ? savedJobs.length : savedJobs.filter(sj => sj.folder === f.id).length;
+          return (
+            <button
+              key={f.id}
+              onClick={() => setActiveFolder(f.id)}
+              className={`relative px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                isActive
+                  ? 'text-accent-400 font-semibold'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface'
+              }`}
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="saved-tab-indicator"
+                  className="absolute inset-0 bg-accent-500/15 border border-accent-500/30 rounded-full -z-10"
+                  transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                />
+              )}
+              {f.label} ({count})
+            </button>
+          );
+        })}
       </div>
 
       {/* List */}
       {filteredJobs.length === 0 ? (
-        <div className="text-center py-16 bg-white/5 border border-white/10 rounded-xl">
-          <Folder className="mx-auto text-gray-600 mb-3" size={40} />
-          <h3 className="text-lg font-medium text-white mb-1">No jobs in this section</h3>
-          <p className="text-gray-400 text-sm">
-            Jobs you shortlist or track will appear here. Go to the feed to save some!
+        <div className="text-center py-16 bg-bg-surface border border-border-subtle rounded-2xl p-8 space-y-3">
+          <Folder className="mx-auto text-text-tertiary w-10 h-10 opacity-50" />
+          <h3 className="text-sm font-semibold text-text-primary">No saved jobs in this category</h3>
+          <p className="text-xs text-text-tertiary">
+            Jobs you bookmark from the main opportunity feed will be organized here.
           </p>
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="space-y-3">
           {filteredJobs.map((sj) => {
             const job = sj.jobs;
             if (!job) return null;
+            const isChecked = selectedIds.includes(sj.job_id);
+
             return (
               <div
                 key={sj.id}
-                className="job-card p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden"
+                className={`p-4 rounded-2xl bg-bg-surface border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                  isChecked ? 'border-accent-500/40 bg-accent-500/5' : 'border-border-subtle hover:border-border-default'
+                }`}
               >
-                <div 
-                  className="flex-1 cursor-pointer"
-                  onClick={() => setSelectedJob(sj)}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-bold text-accent-500 bg-accent-500/10 px-2 py-0.5 rounded-full">
-                      {job.source_name}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      Saved {new Date(sj.saved_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-bold text-white hover:underline">{job.title}</h3>
-                  <p className="text-gray-400 text-sm mb-2">{job.company}</p>
-                  
-                  <div className="flex flex-wrap gap-2 text-xs text-gray-500">
-                    {job.location && job.location.length > 0 && (
-                      <span>📍 {job.location.join(', ')}</span>
-                    )}
-                    {job.work_mode && <span>• {job.work_mode}</span>}
-                    {job.employment_type && <span>• {job.employment_type}</span>}
+                <div className="flex items-start space-x-3 min-w-0">
+                  <button
+                    onClick={() => toggleSelect(sj.job_id)}
+                    className="mt-1 text-text-tertiary hover:text-accent-400"
+                  >
+                    {isChecked ? <CheckSquare className="w-4 h-4 text-accent-500" /> : <Square className="w-4 h-4" />}
+                  </button>
+
+                  <div className="min-w-0 flex-1 cursor-pointer" onClick={() => setSelectedJob(sj)}>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-[10px] font-mono font-bold text-accent-400 bg-accent-500/10 px-2 py-0.5 rounded uppercase">
+                        {job.source_name || 'verified'}
+                      </span>
+                      <span className="text-[10px] text-text-tertiary">
+                        Saved {new Date(sj.saved_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-semibold text-text-primary hover:text-accent-400 transition-colors mt-1 truncate">
+                      {job.title}
+                    </h3>
+                    <p className="text-xs text-text-secondary truncate mt-0.5">{job.company}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[10px] text-gray-500 uppercase tracking-widest">Stage</label>
-                    <select
-                      value={sj.folder}
-                      disabled={isUpdating === sj.job_id}
-                      onChange={(e) => handleUpdateFolder(sj.job_id, e.target.value)}
-                      className="bg-white/5 border border-white/10 rounded-md py-1 px-3 text-xs text-gray-200 focus:outline-none focus:border-accent-500 transition-colors"
-                    >
-                      <option value="shortlisted">Shortlist</option>
-                      <option value="applied">Applied</option>
-                      <option value="oa">Online Assess.</option>
-                      <option value="interview">Interviewing</option>
-                      <option value="offer">Offer</option>
-                      <option value="rejected">Rejected</option>
-                    </select>
-                  </div>
+                <div className="flex items-center space-x-3 shrink-0">
+                  <select
+                    value={sj.folder}
+                    disabled={isUpdating === sj.job_id}
+                    onChange={(e) => handleUpdateFolder(sj.job_id, e.target.value)}
+                    className="bg-bg-elevated border border-border-subtle rounded-xl py-1.5 px-3 text-xs text-text-secondary focus:outline-none"
+                  >
+                    <option value="shortlisted">Stage: Shortlist</option>
+                    <option value="applied">Stage: Applied</option>
+                    <option value="oa">Stage: Online Assess.</option>
+                    <option value="interview">Stage: Interviewing</option>
+                    <option value="offer">Stage: Offer</option>
+                  </select>
 
                   <button
                     onClick={() => handleRemove(sj.job_id)}
-                    className="p-2 text-gray-500 hover:text-red-400 hover:bg-white/5 rounded-lg transition-colors mt-4 md:mt-0"
-                    title="Remove Bookmark"
+                    className="p-2 rounded-xl text-text-tertiary hover:text-red-400 hover:bg-red-500/10 transition-colors"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -183,60 +226,42 @@ export function SavedJobsClient({ initialSavedJobs }: SavedJobsClientProps) {
         </div>
       )}
 
-      {/* Simplified job details trigger inside drawer */}
+      {/* Bulk Actions Floating Bar */}
+      {selectedIds.length > 0 && (
+        <motion.div
+          initial={{ y: 50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 bg-bg-elevated border border-accent-500/40 rounded-2xl px-5 py-3 shadow-2xl flex items-center space-x-4"
+        >
+          <span className="text-xs font-bold text-accent-400">{selectedIds.length} Selected</span>
+          <div className="h-4 w-[1px] bg-border-subtle" />
+          <select
+            onChange={(e) => handleBulkMove(e.target.value)}
+            className="bg-bg-surface border border-border-subtle rounded-xl px-3 py-1.5 text-xs text-text-primary focus:outline-none"
+          >
+            <option value="">Move selected to...</option>
+            <option value="shortlisted">Shortlist</option>
+            <option value="applied">Applied</option>
+            <option value="oa">Online Assessment</option>
+            <option value="interview">Interviewing</option>
+          </select>
+          <button
+            onClick={() => setSelectedIds([])}
+            className="text-xs text-text-tertiary hover:text-text-primary"
+          >
+            Clear
+          </button>
+        </motion.div>
+      )}
+
+      {/* Drawer */}
       <Drawer isOpen={selectedJob !== null} onClose={() => setSelectedJob(null)}>
-        {selectedJob && (
-          <div className="p-6 text-gray-200">
-            <span className="text-xs font-bold text-accent-500 uppercase tracking-widest bg-accent-500/10 px-2.5 py-1 rounded-full mb-3 inline-block">
-              {selectedJob.jobs.source_name}
-            </span>
-            <h2 className="text-2xl font-bold text-white mb-1">{selectedJob.jobs.title}</h2>
-            <p className="text-gray-400 text-lg mb-4">{selectedJob.jobs.company}</p>
-
-            <div className="grid grid-cols-2 gap-4 mb-6 bg-white/5 p-4 rounded-xl border border-white/10 text-sm">
-              <div>
-                <span className="text-gray-500 block text-xs uppercase tracking-wider mb-0.5">Location</span>
-                <span className="text-white font-medium">{selectedJob.jobs.location?.join(', ') || 'N/A'}</span>
-              </div>
-              <div>
-                <span className="text-gray-500 block text-xs uppercase tracking-wider mb-0.5">Work Mode</span>
-                <span className="text-white font-medium capitalize">{selectedJob.jobs.work_mode}</span>
-              </div>
-              <div>
-                <span className="text-gray-500 block text-xs uppercase tracking-wider mb-0.5">Salary / CTC</span>
-                <span className="text-white font-medium">
-                  {selectedJob.jobs.ctc_bucket ? `${selectedJob.jobs.ctc_bucket} LPA` : 'Not Disclosed'}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-500 block text-xs uppercase tracking-wider mb-0.5">Employment Type</span>
-                <span className="text-white font-medium capitalize">{selectedJob.jobs.employment_type || 'Full Time'}</span>
-              </div>
-            </div>
-
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-2">Description</h3>
-              <div className="text-sm text-gray-300 leading-relaxed max-h-[300px] overflow-y-auto pr-2 bg-white/5 p-4 rounded-xl border border-white/5 whitespace-pre-line">
-                {selectedJob.jobs.description || 'No description provided.'}
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <a
-                href={selectedJob.jobs.apply_url || selectedJob.jobs.source_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full bg-accent-500 hover:bg-accent-600 text-white text-center py-2.5 rounded-lg font-semibold text-sm transition-colors flex items-center justify-center gap-2"
-              >
-                Apply Now
-                <ExternalLink size={16} />
-              </a>
-              <button
-                onClick={() => handleRemove(selectedJob.job_id)}
-                className="w-full border border-red-500/20 hover:border-red-500/40 text-red-400 hover:bg-red-500/10 py-2.5 rounded-lg text-sm transition-all"
-              >
-                Delete Bookmark
-              </button>
+        {selectedJob && selectedJob.jobs && (
+          <div className="p-6 text-text-primary space-y-4">
+            <h2 className="text-lg font-bold">{selectedJob.jobs.title}</h2>
+            <p className="text-xs text-text-secondary">{selectedJob.jobs.company}</p>
+            <div className="p-4 bg-bg-surface rounded-xl border border-border-subtle text-xs leading-relaxed max-h-60 overflow-y-auto">
+              {selectedJob.jobs.description || 'No description.'}
             </div>
           </div>
         )}

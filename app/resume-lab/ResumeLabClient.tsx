@@ -315,6 +315,42 @@ export function ResumeLabClient({ initialVersions, initialOutcomes }: ResumeLabC
                           <Sparkles size={12} />
                           Analyse
                         </a>
+
+                        <button
+                          onClick={async () => {
+                            if (!ver.ats_score) return;
+                            try {
+                              const res = await fetch('/api/resume-lab/benchmark', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  ats_score: ver.ats_score,
+                                  role_tag: ver.role_tags?.[0] ?? null,
+                                  got_interview: null,
+                                  got_offer: null,
+                                  yoe_bucket: '0-1'
+                                })
+                              });
+                              if (res.ok) {
+                                const stats = await fetch(
+                                  `/api/resume-lab/benchmark?ats_score=${ver.ats_score}` +
+                                  (ver.role_tags?.[0] ? `&role_tag=${encodeURIComponent(ver.role_tags[0])}` : '')
+                                ).then(r => r.json());
+                                if (stats.percentile !== null) {
+                                  alert(`🎯 Your ATS score (${ver.ats_score}%) is higher than ${stats.percentile}% of ${stats.count} resumes for similar roles.\nCommunity avg: ${stats.avg_score}% | Interview rate: ${stats.interview_rate}%`);
+                                } else {
+                                  alert(`Score shared! You\\'re one of the first to benchmark this role.`);
+                                }
+                              }
+                            } catch {
+                              // silent
+                            }
+                          }}
+                          className="flex items-center gap-1.5 text-xs font-medium py-1.5 px-2.5 rounded-lg border bg-purple-500/10 border-purple-500/20 text-purple-400 hover:bg-purple-500/20 hover:border-purple-500/30 transition-all"
+                          title="Compare score anonymously with community"
+                        >
+                          📊 Benchmark
+                        </button>
                       </div>
 
                       <div className="flex items-center gap-1.5">

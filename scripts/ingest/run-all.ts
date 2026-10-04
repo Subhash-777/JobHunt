@@ -6,6 +6,9 @@ import { fetchGreenhouse } from './ats/greenhouse';
 import { fetchLever } from './ats/lever';
 import { fetchAshby } from './ats/ashby';
 import { fetchGithubList } from './github_lists';
+import { fetchJobicy } from './sources/jobicy';
+import { fetchArbeitnow } from './sources/arbeitnow';
+import { fetchWellfound } from './sources/wellfound';
 import { createClient } from '@supabase/supabase-js';
 import { NormalizedJob } from './types';
 import * as dotenv from 'dotenv';
@@ -85,14 +88,17 @@ export async function runIngestion(tier: number) {
       fetchGreenhouse('stripe'),
       fetchLever('cred'),
       fetchAshby('linear'),
-      fetchGithubList('https://github.com/SimplifyJobs/Summer2026-Internships', 'dev')
+      fetchGithubList('https://github.com/SimplifyJobs/Summer2026-Internships', 'dev'),
+      fetchJobicy(),
+      fetchArbeitnow()
     );
   }
 
   if (tier === 2 || tier === 0) {
     promises.push(
       fetchInternshala('software-development', 'bangalore'),
-      fetchFreshersworld('software engineer', '')
+      fetchFreshersworld('software engineer', ''),
+      fetchWellfound('software-engineer')
     );
   }
 

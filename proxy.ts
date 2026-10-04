@@ -40,14 +40,25 @@ export async function proxy(request: NextRequest) {
 
     const { data: { user } } = await supabase.auth.getUser();
 
+    const { pathname } = request.nextUrl;
+
+    // ── Auth-required routes ───────────────────────────────────────────────────
     const protectedRoutes = ['/profile', '/calendar', '/watchlists'];
-    const isProtectedRoute = protectedRoutes.some(route => request.nextUrl.pathname.startsWith(route));
+    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
     if (isProtectedRoute && !user) {
       const url = request.nextUrl.clone();
       url.pathname = '/auth/login';
-      url.searchParams.set('next', request.nextUrl.pathname);
+      url.searchParams.set('next', pathname);
       return NextResponse.redirect(url);
+    }
+
+    // ── Admin-only routes (server-side enforcement) ────────────────────────────
+    if (pathname.startsWith('/admin')) {
+      const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+      if (!user || (adminEmail && user.email !== adminEmail)) {
+        return NextResponse.redirect(new URL('/', request.url));
+      }
     }
   } catch (err) {
     console.error('Error during Proxy execution:', err);

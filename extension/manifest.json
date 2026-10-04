@@ -1,0 +1,61 @@
+{
+  "manifest_version": 3,
+  "name": "JobHunt India – Autofill & Capture",
+  "short_name": "JobHunt",
+  "version": "1.0.0",
+  "description": "One-click autofill for Internshala, Unstop, Naukri & LinkedIn. Capture jobs to your JobHunt tracker instantly.",
+  "icons": {
+    "16":  "icons/icon16.png",
+    "48":  "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon":  "icons/icon48.png",
+    "default_title": "JobHunt India"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.internshala.com/*",
+        "*://*.unstop.com/*",
+        "*://*.naukri.com/*",
+        "*://*.linkedin.com/jobs/*",
+        "*://*.greenhouse.io/*",
+        "*://*.lever.co/*",
+        "*://*.ashbyhq.com/*",
+        "*://subhash-jobhunt.vercel.app/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": [
+    "storage",
+    "tabs",
+    "activeTab",
+    "scripting",
+    "notifications"
+  ],
+  "host_permissions": [
+    "*://*.internshala.com/*",
+    "*://*.unstop.com/*",
+    "*://*.naukri.com/*",
+    "*://*.linkedin.com/*",
+    "*://*.greenhouse.io/*",
+    "*://*.lever.co/*",
+    "*://*.ashbyhq.com/*",
+    "*://subhash-jobhunt.vercel.app/*",
+    "*://iiyuvwfjscqptxkpxqmv.supabase.co/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["popup.html", "icons/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

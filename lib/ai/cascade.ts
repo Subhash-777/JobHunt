@@ -80,7 +80,7 @@ async function callGroq(params: AICallParams): Promise<{ text: string; tokensUse
 }
 
 async function callOpenRouter(params: AICallParams): Promise<{ text: string; tokensUsed: number }> {
-  const model = 'google/gemini-2.5-flash:free';
+  const model = 'qwen/qwen3.8-27b:free';
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -112,7 +112,7 @@ async function callOpenRouter(params: AICallParams): Promise<{ text: string; tok
 }
 
 async function callGemini(params: AICallParams): Promise<{ text: string; tokensUsed: number }> {
-  const model = 'gemini-1.5-flash';
+  const model = 'gemini-2.5-flash';
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`;
   
   const reqBody: any = {

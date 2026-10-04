@@ -28,14 +28,25 @@ export async function syncWatchlistDeltaToCalendar(userId: string, watchlist: an
       }
     );
 
+    const text = await res.text();
     if (!res.ok) {
-      const text = await res.text();
       console.error('Failed to sync watchlist event to Google Calendar:', text);
       return;
     }
 
-    // Mark matched events as synced
+    const eventData = JSON.parse(text);
     const sb = supabaseAdmin();
+
+    if (eventData?.id) {
+      await sb.from('calendar_events_map').upsert({
+        user_id: userId,
+        internal_type: 'watchlist_delta',
+        internal_ref_id: watchlist.id,
+        google_event_id: eventData.id
+      }, { onConflict: 'user_id,internal_type,internal_ref_id' });
+    }
+
+    // Mark matched events as synced
     await sb
       .from('watchlist_events')
       .update({ synced_to_calendar: true })

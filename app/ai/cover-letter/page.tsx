@@ -5,6 +5,11 @@ import { CoverLetterClient } from './CoverLetterClient';
 
 export const dynamic = 'force-dynamic';
 
+export const metadata = {
+  title: 'AI Cover Letter Generator — JobHunt India',
+  description: 'Generate customized, role-tailored cover letters powered by multi-provider AI cascade for Indian tech applications.',
+};
+
 export default async function CoverLetterPage() {
   const supabase = await createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();

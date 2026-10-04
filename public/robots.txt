@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+Allow: /community/
+Allow: /u/
+Allow: /jobs/
+
+# Block admin + internal pages
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /debug-env/
+
+# Block user-specific private pages
+Disallow: /profile
+Disallow: /tracker
+Disallow: /saved
+Disallow: /dashboard
+Disallow: /watchlists
+
+# Sitemap location
+Sitemap: https://subhash-jobhunt.vercel.app/sitemap.xml
+
+# Crawl-delay for polite bots
+Crawl-delay: 5

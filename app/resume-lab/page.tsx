@@ -4,6 +4,11 @@ import { ResumeLabClient } from './ResumeLabClient';
 
 export const dynamic = 'force-dynamic';
 
+export const metadata = {
+  title: 'Resume Lab & AI Builder — JobHunt India',
+  description: 'Build, benchmark, and tailor ATS-optimized tech resumes for Indian software engineering and data roles.',
+};
+
 export default async function ResumeLabPage() {
   const supabase = await createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();

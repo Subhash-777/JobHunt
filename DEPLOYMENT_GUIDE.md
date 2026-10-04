@@ -1,204 +1,159 @@
-# JobHunt India — Production Deployment Guide
+# 🚀 JobHunt India — Production Deployment & Operations Guide (v1.0)
 
-This guide provides step-by-step instructions for deploying JobHunt India to production.
+This guide provides step-by-step instructions for deploying and running **JobHunt India** on production infrastructure with zero recurring SaaS costs.
 
 ---
 
 ## 1. Supabase Production Setup
 
-To host the backend database, authentication, and file storage in a production-ready environment:
-
-1. **Create a Production Project**:
-   - Go to the [Supabase Dashboard](https://supabase.com).
-   - Click **New Project** and select your organization.
-   - Enter `JobHunt India Production` as the name, generate a strong database password (keep this secure), and select your closest AWS region (e.g., `ap-south-1` Mumbai).
-   
-2. **Execute Database Migrations**:
-   - Navigate to the **SQL Editor** in the left sidebar.
-   - Click **New Query** and run the contents of the migration files in order:
-     1. [0001_initial_schema.sql](file:///home/subhash/projects/JobHunt/supabase/migrations/0001_initial_schema.sql)
-     2. [0002_auth_trigger.sql](file:///home/subhash/projects/JobHunt/supabase/migrations/0002_auth_trigger.sql)
-     3. [0003_applications_unique.sql](file:///home/subhash/projects/JobHunt/supabase/migrations/0003_applications_unique.sql)
-     4. [0004_mock_sessions.sql](file:///home/subhash/projects/JobHunt/supabase/migrations/0004_mock_sessions.sql)
-     5. [0005_fix_auth_trigger.sql](file:///home/subhash/projects/JobHunt/supabase/migrations/0005_fix_auth_trigger.sql)
-   - Ensure all queries run without errors.
-
-3. **Enable Required Extensions**:
-   - Run the following SQL to make sure required extensions are active:
-     ```sql
-     CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public;
-     CREATE EXTENSION IF NOT EXISTS pg_cron;
-     CREATE EXTENSION IF NOT EXISTS pg_trgm;
-     CREATE EXTENSION IF NOT EXISTS unaccent;
-     ```
-
-4. **Enable Google OAuth in Supabase Auth**:
-   - Go to **Authentication** -> **Providers** -> **Google**.
-   - Set **Client ID** and **Client Secret** (obtained in the Google Cloud Setup section below).
-   - Copy the **Redirect URL** from Supabase to configure Google OAuth.
-
-5. **Create Storage Buckets**:
-   - Navigate to **Storage** in the sidebar.
-   - Click **New Bucket**.
-   - Name: `resumes`.
-   - Toggle **Public bucket** to **OFF** (Keep it Private).
-   - In **Allowed media types**, specify `application/pdf`.
-   - Set the size limit to **5MB** (5242880 bytes).
-
-6. **Authentication Rate Limits**:
-   - Under **Authentication** -> **Settings**, re-enable email confirmations for signup (previously disabled during development).
-   - Adjust security rate limits to protect your endpoints in production.
-
-7. **Retrieve Environment Credentials**:
-   - Go to **Project Settings** -> **API**.
-   - Note the production `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`.
+1. **Create Project**: Go to [database.new](https://database.new) and create a new project named `JobHunt-Production`. Select Region: `ap-south-1 (Mumbai)` for lowest latency in India.
+2. **Run Migrations**: In the SQL Editor, execute **all 10 migrations** in numerical order from `supabase/migrations/`:
+   - `0001_initial_schema.sql` — Core tables (jobs, profiles, saved_jobs, applications, etc.)
+   - `0002_auth_trigger.sql` — Auto-create profile row on signup
+   - `0003_applications_unique.sql` — Unique constraint on application pipeline
+   - `0004_mock_sessions.sql` — Mock interview sessions table
+   - `0005_fix_auth_trigger.sql` — Auth trigger fix
+   - `0006_enhanced_profile.sql` — Extended profile fields (CGPA, college, GitHub, skills)
+   - `0007_roadmap_cache.sql` — Skill gap roadmap AI cache
+   - `0008_realtime_dms.sql` — Realtime DM conversations & messages
+   - `0009_campus_drives.sql` — Off-campus drive listings
+   - `0010_rss_recruiter.sql` — RSS token, recruiter panel, resume benchmarks, source health log *(Phase 5)*
+3. **Enable Database Extensions**:
+   ```sql
+   create extension if not exists vector;
+   create extension if not exists pg_trgm;
+   create extension if not exists unaccent;
+   ```
+4. **Storage Bucket Setup**:
+   - Create bucket: `resumes`
+   - Privacy: **Private**
+   - File size limit: `5MB`
+   - Allowed MIME types: `application/pdf`
+5. **Authentication Configuration**:
+   - Enable Email/Password signup in Authentication → Providers.
+   - Add Redirect URL: `https://subhash-jobhunt.vercel.app/auth/callback`
+6. **Daily Skill Demand Aggregation Task (`pg_cron`)**:
+   ```sql
+   select cron.schedule('skill-demand-daily', '0 3 * * *', $$
+     insert into skill_demand_daily (skill, demand_count, logged_at)
+     select unnest(key_skills) as skill, count(*) as demand_count, current_date
+     from jobs where posted_at > now() - interval '30 days'
+     group by skill;
+   $$);
+   ```
 
 ---
 
-## 2. Google Cloud Project Setup
+## 2. Google Cloud OAuth & Calendar Setup
 
-Used to handle calendar synchronization (Google Calendar API):
-
-1. **Create Google Cloud Project**:
-   - Go to [Google Cloud Console](https://console.cloud.google.com).
-   - Click the project dropdown and click **New Project**.
-   - Name: `JobHunt India Production` and click **Create**.
-
-2. **Enable Google Calendar API**:
-   - Navigate to **APIs & Services** -> **Library**.
-   - Search for **Google Calendar API**.
-   - Click **Google Calendar API** and then **Enable**.
-
-3. **Configure OAuth Consent Screen**:
-   - Go to **APIs & Services** -> **OAuth consent screen**.
-   - User Type: Select **External**.
-   - App registration fields:
-     - App name: `JobHunt India`
-     - User support email: Select your email
-     - Developer contact information: Enter your email
-   - **Scopes**: Add or remove scopes. Select `.../auth/calendar` and `.../auth/calendar.events` (read/write access to Google Calendar).
-   - Save and continue. Add test users if the app is kept in "Testing" mode.
-
-4. **Create OAuth 2.0 Client ID Credentials**:
-   - Go to **APIs & Services** -> **Credentials**.
-   - Click **Create Credentials** -> **OAuth client ID**.
-   - Application Type: **Web application**.
-   - Name: `JobHunt India Web Client`.
-   - **Authorized JavaScript origins**:
-     - `https://your-domain.vercel.app` (and `http://localhost:3000` for development)
-   - **Authorized redirect URIs**:
-     - `https://your-domain.vercel.app/api/calendar/google/callback`
-   - Click **Create** and copy the **Client ID** and **Client Secret**.
+1. Go to [Google Cloud Console](https://console.cloud.google.com/) and create project `JobHunt-India`.
+2. Enable **Google Calendar API** under APIs & Services.
+3. Configure OAuth Consent Screen (External):
+   - App Name: `JobHunt India`
+   - Scopes: `https://www.googleapis.com/auth/calendar`, `https://www.googleapis.com/auth/calendar.events`
+4. Create OAuth 2.0 Web Client Credentials:
+   - Authorized Javascript Origins: `https://subhash-jobhunt.vercel.app`
+   - Authorized Redirect URIs: `https://subhash-jobhunt.vercel.app/api/calendar/google/callback`
+5. Copy Client ID and Client Secret into Vercel and `.env.local`.
 
 ---
 
-## 3. Free AI API Credentials
+## 3. Free-Tier AI Model Gateways & Verified Model Slugs
 
-JobHunt India uses a dynamic cascading model using only free tiers:
+JobHunt India uses a zero-cost 3-tier cascade fallback:
 
-1. **Groq Key**:
-   - Sign up at [console.groq.com](https://console.groq.com).
-   - Go to **API Keys** and generate a new key. Note it as `GROQ_API_KEY`.
-   - Allows up to 14,400 free requests per day.
+### A. Groq API (`llama-3.3-70b-versatile`)
+- Sign up at [console.groq.com](https://console.groq.com) and generate an API key.
+- Free quota: 14,000 requests/day.
 
-2. **OpenRouter Key**:
-   - Sign up at [openrouter.ai](https://openrouter.ai).
-   - Go to **API Keys** and generate a key. Note it as `OPENROUTER_API_KEY`.
-   - Confirm free models are available by running:
-     ```bash
-     curl https://openrouter.ai/api/v1/models \
-       -H "Authorization: Bearer $OPENROUTER_API_KEY" | grep ":free"
-     ```
+### B. OpenRouter API (`qwen/qwen3.8-27b:free`)
+- Sign up at [openrouter.ai](https://openrouter.ai) and generate an API key.
+- Free quota: 180 requests/day.
 
-3. **Google Gemini Key**:
-   - Sign up at [aistudio.google.com](https://aistudio.google.com).
-   - Click **Get API Key** and create a key in an existing project. Note it as `GEMINI_API_KEY`.
-
-4. **HuggingFace Access Token** (for vector embedding conversions):
-   - Register at [huggingface.co](https://huggingface.co).
-   - Go to **Profile** -> **Settings** -> **Access Tokens**.
-   - Create a token with `read` scope. Note it as `HF_TOKEN`.
+### C. Google Gemini API (`gemini-2.5-flash`)
+- Sign up at [aistudio.google.com](https://aistudio.google.com) and create an API key.
+- Free quota: 900 requests/day.
 
 ---
 
-## 4. SerpApi (Trust-Verification Scraper)
+## 4. GitHub Repository Secrets & Actions CI/CD Setup
 
-Used as a supplementary source for validating Company Discovery requests:
+In your GitHub repository, navigate to **Settings → Secrets and variables → Actions** and add:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `GROQ_API_KEY`
+- `OPENROUTER_API_KEY`
+- `GEMINI_API_KEY`
+- `NEXT_PUBLIC_ADMIN_EMAIL` — your admin email address for `/admin/source-health` access control
+- `GOOGLE_CALENDAR_CLIENT_ID`
+- `GOOGLE_CALENDAR_CLIENT_SECRET`
 
-1. Sign up at [serpapi.com](https://serpapi.com).
-2. Note your key as `SERPAPI_KEY` (Free tier offers 100 searches/month).
+The workflow `.github/workflows/ingest.yml` automatically triggers `scripts/ingest/run-all.ts` every 6 hours.
 
----
-
-## 5. GitHub Repository Setup (Ingestion CI/CD)
-
-The ingestion pipeline scrapes ATS boards and India-specific portals in the background:
-
-1. **Verify Workflow**:
-   - Ensure the scraper action script is committed at `.github/workflows/ingest.yml`.
-
-2. **Add Secrets**:
-   - Go to your repository on GitHub.
-   - Click **Settings** -> **Secrets and variables** -> **Actions**.
-   - Click **New repository secret** and add the following:
-     - `SUPABASE_URL`: Production Supabase URL
-     - `SUPABASE_SERVICE_ROLE_KEY`: Production Supabase Service Role Key
-     - `GROQ_API_KEY`: Groq API Key
-     - `OPENROUTER_API_KEY`: OpenRouter API Key
-     - `GEMINI_API_KEY`: Gemini API Key
-     - `HF_TOKEN`: HuggingFace Token
-     - `SERPAPI_KEY`: SerpApi Key
-     
-3. **Trigger Scrape manually**:
-   - Go to the **Actions** tab in the GitHub Repository.
-   - Select the `Ingest Jobs` workflow.
-   - Click **Run workflow** -> **Run workflow** (select tier 1/2) and confirm it finishes successfully.
+### .env.local Template (local development)
+```bash
+NEXT_PUBLIC_APP_URL=https://subhash-jobhunt.vercel.app
+NEXT_PUBLIC_SUPABASE_URL=https://[your-project].supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=[your-anon-key]
+SUPABASE_SERVICE_ROLE_KEY=[your-service-role-key]
+GROQ_API_KEY=[your-groq-key]
+OPENROUTER_API_KEY=[your-openrouter-key]
+GEMINI_API_KEY=[your-gemini-key]
+NEXT_PUBLIC_ADMIN_EMAIL=[your-email@domain.com]
+GOOGLE_CALENDAR_CLIENT_ID=[your-client-id]
+GOOGLE_CALENDAR_CLIENT_SECRET=[your-client-secret]
+```
 
 ---
 
-## 6. Vercel Deployment
+## 5. Chrome Extension Distribution
 
-Host the Next.js frontend and API route handlers:
+The Chrome Extension lives in the `extension/` directory.
 
-1. **Import Project**:
-   - Go to [Vercel](https://vercel.com) and click **Add New** -> **Project**.
-   - Import your GitHub repository.
+**Option A — Developer Mode (personal use):**
+1. Open Chrome → `chrome://extensions`
+2. Enable **Developer Mode** (toggle top-right)
+3. Click **Load unpacked** → select the `extension/` folder
+4. The JobHunt icon appears in the toolbar
 
-2. **Build Settings**:
-   - Preset: **Next.js** (Auto-detected).
-   - Directory: `./` (Root).
-
-3. **Environment Variables**:
-   - Add all credentials exactly as configured in your local `.env.local`:
-     - `NEXT_PUBLIC_APP_URL` (your custom production domain or Vercel URL)
-     - `NEXT_PUBLIC_SUPABASE_URL`
-     - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-     - `SUPABASE_SERVICE_ROLE_KEY`
-     - `GOOGLE_CALENDAR_CLIENT_ID`
-     - `GOOGLE_CALENDAR_CLIENT_SECRET`
-     - `GROQ_API_KEY`
-     - `OPENROUTER_API_KEY`
-     - `GEMINI_API_KEY`
-     - `HF_TOKEN`
-     - `SERPAPI_KEY`
-   - **Important**: Make sure to check **Encrypt / Sensitive** for variables containing secret keys (`SUPABASE_SERVICE_ROLE_KEY`, `GOOGLE_CALENDAR_CLIENT_SECRET`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY`, `HF_TOKEN`).
-
-4. **Update OAuth Redirects**:
-   - Once Vercel deploys, copy the live URL (e.g. `https://jobhunt-india.vercel.app`).
-   - Go back to **Google Cloud Console Credentials** and update the **Authorized redirect URIs** to:
-     `https://your-domain.vercel.app/api/calendar/google/callback`
-   - Go back to **Supabase Auth Provider Settings** and update the Google OAuth Redirect URL.
+**Option B — Chrome Web Store (public distribution):**
+1. Pay the one-time $5 developer fee at [chrome.google.com/webstore/devconsole](https://chrome.google.com/webstore/devconsole)
+2. Upload `extension/` as a ZIP, complete the store listing, submit for review
+3. Review typically takes 1–3 business days
 
 ---
 
-## 7. Post-Deployment Verification Checklist
+## 6. Phase 5 New Database Tables
 
-Verify these 7 items manually on your production deployment URL before launch:
+| Table | Added In | Purpose |
+| :--- | :---: | :--- |
+| `recruiters` | `0010` | Recruiter accounts with company info and verification status |
+| `recruiter_jobs` | `0010` | Recruiter-posted jobs with skill/CGPA filters |
+| `resume_benchmarks` | `0010` | Anonymous peer ATS score sharing and percentile ranking |
+| `source_health_log` | `0010` | Ingestion run history powering the admin health dashboard |
 
-- [ ] **Sign Up Flow**: Register a new user at `/auth/signup`. Ensure the email confirmation arrives, and check that a profile is automatically created in the Supabase database with `user_type` = `'student'`.
-- [ ] **Profile Completion**: Complete the onboarding profile (graduation year, skills, branches) and confirm eligibility chips appear correctly on the feed.
-- [ ] **Calendar Event Integration**: Authenticate your Google Account via the Profile page, save a job from the feed, and confirm a deadline event appears on your Google Calendar with a 2-day-prior reminder.
-- [ ] **Watchlist Delta events**: Create a watchlist keyword alert, manually insert a matching job, trigger ingestion, and check that a same-day all-day event appears in your Google Calendar representing the new match.
-- [ ] **Fit Score Rings**: Confirm the circular Fit Score badge on job details animations runs smoothly and computes correct percentages using the AI Cascade.
-- [ ] **Lighthouse Performance**: Run a Lighthouse Audit on the main feed page. Target score: **Lighthouse ≥ 90** for both Performance and Accessibility.
-- [ ] **Security Sanitization**: Open Chrome Developer Tools, go to the Network tab, reload pages, and verify that no secret keys (e.g. `SUPABASE_SERVICE_ROLE_KEY`, `GROQ_API_KEY`, etc.) are exposed in any client-side bundle or API headers.
+---
+
+## 7. Production Route Coverage (51 Routes)
+
+See `PROJECT_STATUS.md` for the full route matrix. Key routes added in Phase 5:
+- `/recruiter` — Employer signup, verification, and job posting
+- `/admin/source-health` — Admin-only ingestion health monitor (protected by proxy.ts)
+- `/sitemap.xml` — Dynamic SEO sitemap with all public profile slugs
+- `/api/feed/[token]` — Personal RSS 2.0 watchlist feed
+- `/api/resume-lab/benchmark` — Anonymous ATS benchmarking API
+
+---
+
+## 8. v1.0 Journey Verification Checklist
+
+Run each of the 7 journeys on production (`subhash-jobhunt.vercel.app`) before any public announcement:
+
+- [ ] **Journey 1 — First-time student user**: Signup → profile form → PDF parse → Google Calendar connect → feed eligibility chip → save job → calendar event created
+- [ ] **Journey 2 — Job search and AI features**: Open job drawer → Tailor Resume response → ai_usage_log row added → roadmap renders with real resources → mock interview 10 Qs with scoring
+- [ ] **Journey 3 — Community features**: Post interview experience → log OA → send DM → submit PPO report → confirm dm_messages DB row
+- [ ] **Journey 4 — Watchlist → Calendar**: Create watchlist → insert synthetic matching job → run delta detection → confirm watchlist_events row → confirm calendar_events_map row → verify Google Calendar event
+- [ ] **Journey 5 — Chrome Extension**: Load unpacked → navigate to Internshala job → popup shows logged-in name → autofill works → Save Job shows success → user_submitted_jobs row confirmed
+- [ ] **Journey 6 — RSS Feed**: Copy feed URL from `/profile` → open in browser → valid RSS XML returned → W3C validator passes
+- [ ] **Journey 7 — Recruiter flow**: Signup at `/recruiter` → post test job → confirm recruiters DB row → job visible in main feed → delete test job
