@@ -107,7 +107,7 @@ export default function PlacementClient({ profile, eligibleCount }: PlacementCli
 
   return (
     <div className="w-full space-y-6">
-      <div className="bg-gradient-to-br from-blue-50/80 via-white to-indigo-50/50 border border-border-subtle rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
+      <div className="bg-gradient-to-br from-emerald-50/90 via-white to-amber-50/50 border border-border-subtle rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-display font-extrabold text-text-primary flex items-center gap-2">

@@ -54,92 +54,110 @@ export function FeedFilters({ totalShown }: { totalShown?: number }) {
 
   return (
     <section className="space-y-4">
-      {/* Hero Banner inspired by reference layouts */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50/90 via-white to-indigo-50/70 border border-border-subtle p-5 sm:p-7 shadow-sm">
-        <div className="max-w-3xl space-y-4">
-          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white border border-accent-100 text-[11px] font-semibold text-accent-600 shadow-2xs">
-            <Sparkles className="w-3.5 h-3.5 text-accent-500" />
-            <span>Zero-Cost AI Job Aggregator for India</span>
-          </div>
+      {/* Botanical Editorial Hero Banner */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-50/90 via-white to-amber-50/60 border border-border-subtle p-5 sm:p-7 shadow-2xs">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="max-w-3xl space-y-4">
+            <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white border border-accent-100 text-[11px] font-semibold text-accent-600 shadow-2xs">
+              <Sparkles className="w-3.5 h-3.5 text-accent-500" />
+              <span>High-Signal Tech Discovery • Zero Paid Tiers</span>
+            </div>
 
-          <div className="space-y-1.5">
-            <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-text-primary">
-              Find Your <span className="text-accent-500">Dream Job</span> in India
-            </h1>
-            <p className="text-xs sm:text-sm text-text-secondary max-w-2xl">
-              Discover curated tech roles across Indian boards and company ATS feeds, check eligibility instantly, and sync deadlines to Google Calendar.
-            </p>
-          </div>
+            <div className="space-y-1.5">
+              <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-text-primary">
+                Calm, Curated <span className="text-accent-500">Tech Careers</span> in India
+              </h1>
+              <p className="text-xs sm:text-sm text-text-secondary max-w-2xl">
+                Search verified openings across Indian job boards &amp; ATS feeds, check CGPA/skill eligibility instantly, and sync deadlines to Google Calendar.
+              </p>
+            </div>
 
-          {/* Search Bar */}
-          <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-2.5 pt-1">
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
-              <input
-                type="text"
-                value={draftQuery}
-                onChange={(e) => setDraftQuery(e.target.value)}
-                placeholder="Search job titles, companies, or skills (e.g. Backend, React, Cred)..."
-                aria-label="Search jobs, companies, or skills"
-                className="w-full bg-white border border-border-subtle hover:border-border-default focus:border-accent-500 rounded-xl py-2.5 pl-10 pr-9 text-xs sm:text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent-500/15 shadow-2xs transition-all"
-              />
-              {draftQuery && (
+            {/* Search Bar */}
+            <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-2.5 pt-1">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
+                <input
+                  type="text"
+                  value={draftQuery}
+                  onChange={(e) => setDraftQuery(e.target.value)}
+                  placeholder="Search roles, companies, or skills (e.g. Backend, React, Cred)..."
+                  aria-label="Search jobs, companies, or skills"
+                  className="w-full bg-white border border-border-subtle hover:border-border-default focus:border-accent-500 rounded-xl py-2.5 pl-10 pr-9 text-xs sm:text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent-500/15 shadow-2xs transition-all"
+                />
+                {draftQuery && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDraftQuery('');
+                      updateParam('q', '');
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary"
+                    aria-label="Clear search"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="submit"
+                  className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-accent-500 hover:bg-accent-600 text-white text-xs sm:text-sm font-semibold shadow-xs shadow-accent-500/20 transition-colors"
+                >
+                  Search Jobs
+                </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setDraftQuery('');
-                    updateParam('q', '');
-                  }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary"
-                  aria-label="Clear search"
+                  onClick={() => setShowMobileFilters(!showMobileFilters)}
+                  className={`lg:hidden p-2.5 rounded-xl border transition-colors ${
+                    showMobileFilters || hasActiveFilters
+                      ? 'bg-accent-50 border-accent-100 text-accent-600'
+                      : 'bg-white border-border-subtle text-text-secondary hover:bg-bg-elevated'
+                  }`}
+                  aria-label="Toggle filters"
                 >
-                  <X className="w-4 h-4" />
+                  <SlidersHorizontal className="w-4 h-4" />
                 </button>
-              )}
-            </div>
+              </div>
+            </form>
 
-            <div className="flex items-center gap-2">
-              <button
-                type="submit"
-                className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-accent-500 hover:bg-accent-600 text-white text-xs sm:text-sm font-semibold shadow-sm shadow-accent-500/20 transition-colors"
-              >
-                Search Jobs
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowMobileFilters(!showMobileFilters)}
-                className={`lg:hidden p-2.5 rounded-xl border transition-colors ${
-                  showMobileFilters || hasActiveFilters
-                    ? 'bg-accent-50 border-accent-200 text-accent-600'
-                    : 'bg-white border-border-subtle text-text-secondary hover:bg-bg-elevated'
-                }`}
-                aria-label="Toggle filters"
-              >
-                <SlidersHorizontal className="w-4 h-4" />
-              </button>
+            {/* Trending Quick Chips */}
+            <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-[11px]">
+              <span className="font-semibold text-text-tertiary mr-1">Trending:</span>
+              {TRENDING_TERMS.map((term) => (
+                <button
+                  key={term}
+                  type="button"
+                  onClick={() => {
+                    setDraftQuery(term);
+                    updateParam('q', term);
+                  }}
+                  className={`px-2.5 py-1 rounded-full border transition-colors ${
+                    searchQuery.toLowerCase() === term.toLowerCase()
+                      ? 'bg-accent-500 text-white border-accent-500 font-semibold'
+                      : 'bg-white/90 text-text-secondary border-border-subtle hover:border-accent-400 hover:text-accent-600'
+                  }`}
+                >
+                  {term}
+                </button>
+              ))}
             </div>
-          </form>
+          </div>
 
-          {/* Trending Quick Chips */}
-          <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-[11px]">
-            <span className="font-semibold text-text-tertiary mr-1">Trending:</span>
-            {TRENDING_TERMS.map((term) => (
-              <button
-                key={term}
-                type="button"
-                onClick={() => {
-                  setDraftQuery(term);
-                  updateParam('q', term);
-                }}
-                className={`px-2.5 py-1 rounded-full border transition-colors ${
-                  searchQuery.toLowerCase() === term.toLowerCase()
-                    ? 'bg-accent-500 text-white border-accent-500 font-semibold'
-                    : 'bg-white/90 text-text-secondary border-border-subtle hover:border-accent-200 hover:text-accent-600'
-                }`}
-              >
-                {term}
-              </button>
-            ))}
+          {/* Minimalist Botanical Growth Graphic Badge (SVG) */}
+          <div className="hidden lg:flex flex-col items-end justify-center shrink-0">
+            <div className="p-4 rounded-2xl bg-white/90 border border-border-subtle shadow-2xs space-y-2 w-56">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-text-tertiary">Live Signal</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              </div>
+              <div className="text-lg font-display font-extrabold text-accent-600">10+ Indian &amp; ATS Feeds</div>
+              <svg viewBox="0 0 180 42" className="w-full h-10" aria-hidden="true">
+                <path d="M4 36 C36 32, 54 18, 86 22 C118 26, 136 8, 176 6" fill="none" stroke="#047857" strokeWidth="2.5" strokeLinecap="round" />
+                <circle cx="176" cy="6" r="4" fill="#D97706" />
+              </svg>
+              <p className="text-[11px] text-text-secondary">Daily automated ingestion &amp; free AI fit scoring</p>
+            </div>
           </div>
         </div>
       </div>
@@ -155,7 +173,7 @@ export function FeedFilters({ totalShown }: { totalShown?: number }) {
                 onClick={() => updateParam('category', tab.id)}
                 className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border transition-all ${
                   isActive
-                    ? 'bg-accent-500 text-white border-accent-500 shadow-xs shadow-accent-500/20'
+                    ? 'bg-accent-500 text-white border-accent-500 shadow-xs'
                     : 'bg-white text-text-secondary border-border-subtle hover:border-border-default hover:text-text-primary'
                 }`}
               >
@@ -186,7 +204,7 @@ export function FeedFilters({ totalShown }: { totalShown?: number }) {
         </div>
       </div>
 
-      {/* Mobile / Tablet Inline Filter Panel (Hidden on Desktop where Left Filter Rail is shown) */}
+      {/* Mobile / Tablet Inline Filter Panel */}
       {showMobileFilters && (
         <div className="lg:hidden p-4 rounded-2xl bg-white border border-border-subtle grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs shadow-sm">
           <div>
@@ -221,8 +239,8 @@ export function FeedFilters({ totalShown }: { totalShown?: number }) {
               <option value="Frontend">Frontend Dev</option>
               <option value="Backend">Backend Dev</option>
               <option value="Fullstack">Fullstack Dev</option>
-              <option value="Data">Data & ML</option>
-              <option value="DevOps">DevOps & Cloud</option>
+              <option value="Data">Data &amp; ML</option>
+              <option value="DevOps">DevOps &amp; Cloud</option>
             </select>
           </div>
 

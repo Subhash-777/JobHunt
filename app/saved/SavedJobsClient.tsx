@@ -164,7 +164,7 @@ export function SavedJobsClient({ initialSavedJobs }: SavedJobsClientProps) {
               <div
                 key={sj.id}
                 className={`p-4 rounded-2xl bg-bg-surface border shadow-2xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
-                  isChecked ? 'border-accent-400 bg-accent-50/40' : 'border-border-subtle hover:border-blue-300'
+                  isChecked ? 'border-accent-400 bg-accent-50/40' : 'border-border-subtle hover:border-emerald-300'
                 }`}
               >
                 <div className="flex items-start space-x-3 min-w-0">

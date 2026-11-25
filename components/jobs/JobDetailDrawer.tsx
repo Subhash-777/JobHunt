@@ -257,7 +257,7 @@ export function JobDetailDrawer({ isOpen, onClose, job }: JobDetailDrawerProps) 
 
           {/* Hidden Gem Banner */}
           {isHiddenGem && (
-            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-accent-50 to-indigo-50 border border-accent-100 flex items-center space-x-3">
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-accent-50 to-amber-50/60 border border-accent-100 flex items-center space-x-3">
               <div className="p-2 rounded-xl bg-white text-accent-500 border border-accent-100 shadow-2xs">
                 <Flame className="w-5 h-5" />
               </div>

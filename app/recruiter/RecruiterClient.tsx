@@ -27,55 +27,55 @@ interface RecruiterJob {
 const S: Record<string, React.CSSProperties> = {
   page: {
     minHeight: '100vh',
-    color: '#0F172A',
+    color: '#0F241D',
     fontFamily: 'inherit'
   },
   hero: {
-    background: 'linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 55%, #EEF2FF 100%)',
-    border: '1px solid #E2E8F0',
+    background: 'linear-gradient(135deg, #ECFDF5 0%, #FFFFFF 55%, #FEF3C7 100%)',
+    border: '1px solid #D5E1DA',
     borderRadius: 20,
     padding: '44px 24px',
     textAlign: 'center',
     marginBottom: 24
   },
-  heroTitle: { fontSize: 'clamp(26px, 4vw, 40px)', fontWeight: 800, marginBottom: 12, color: '#0F172A' },
-  heroSub: { fontSize: 15, color: '#475569', maxWidth: 540, margin: '0 auto 24px' },
+  heroTitle: { fontSize: 'clamp(26px, 4vw, 40px)', fontWeight: 800, marginBottom: 12, color: '#0F241D' },
+  heroSub: { fontSize: 15, color: '#435D52', maxWidth: 540, margin: '0 auto 24px' },
   heroChips: { display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap' },
   chip: {
     background: '#FFFFFF',
-    border: '1px solid #DBEAFE',
+    border: '1px solid #D1FAE5',
     borderRadius: 999,
     padding: '6px 14px',
     fontSize: 12,
     fontWeight: 600,
-    color: '#1D4ED8'
+    color: '#065F46'
   },
   container: { maxWidth: 920, margin: '0 auto', padding: '8px 0 40px' },
   card: {
     background: '#FFFFFF',
-    border: '1px solid #E2E8F0',
+    border: '1px solid #D5E1DA',
     borderRadius: 18,
     padding: 28,
     marginBottom: 20,
     boxShadow: '0 1px 3px rgba(15,23,42,0.05)'
   },
-  h2: { fontSize: 18, fontWeight: 700, marginBottom: 20, color: '#0F172A' },
+  h2: { fontSize: 18, fontWeight: 700, marginBottom: 20, color: '#0F241D' },
   grid2: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 },
   field: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 },
-  label: { fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em' },
+  label: { fontSize: 11, fontWeight: 700, color: '#435D52', textTransform: 'uppercase', letterSpacing: '0.04em' },
   input: {
-    background: '#F8FAFC',
-    border: '1px solid #E2E8F0',
+    background: '#F3F7F4',
+    border: '1px solid #D5E1DA',
     borderRadius: 10,
     padding: '10px 14px',
-    color: '#0F172A',
+    color: '#0F241D',
     fontSize: 14,
     outline: 'none',
     width: '100%',
     boxSizing: 'border-box' as const
   },
   btnPrimary: {
-    background: '#2563EB',
+    background: '#047857',
     color: '#FFFFFF',
     border: 'none',
     borderRadius: 10,
@@ -87,7 +87,7 @@ const S: Record<string, React.CSSProperties> = {
   },
   btnSecondary: {
     background: '#F1F5F9',
-    color: '#0F172A',
+    color: '#0F241D',
     border: '1px solid #CBD5E1',
     borderRadius: 10,
     padding: '9px 18px',
@@ -121,7 +121,7 @@ const S: Record<string, React.CSSProperties> = {
   },
   jobCard: {
     background: '#FFFFFF',
-    border: '1px solid #E2E8F0',
+    border: '1px solid #D5E1DA',
     borderRadius: 14,
     padding: '18px 20px',
     marginBottom: 12,
@@ -132,9 +132,9 @@ const S: Record<string, React.CSSProperties> = {
     boxShadow: '0 1px 2px rgba(15,23,42,0.04)'
   },
   skillChip: {
-    background: '#EFF6FF',
-    border: '1px solid #DBEAFE',
-    color: '#1D4ED8',
+    background: '#ECFDF5',
+    border: '1px solid #D1FAE5',
+    color: '#065F46',
     borderRadius: 6,
     padding: '2px 8px',
     fontSize: 11,
@@ -273,7 +273,7 @@ export default function RecruiterClient() {
   if (loading) {
     return (
       <div style={{ ...S.page, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-        <p style={{ color: '#64748B' }}>Loading recruiter panel…</p>
+        <p style={{ color: '#5C756B' }}>Loading recruiter panel…</p>
       </div>
     )
   }
@@ -282,7 +282,7 @@ export default function RecruiterClient() {
     <div style={S.page}>
       <div style={S.hero}>
         <h1 style={S.heroTitle}>
-          Find India&apos;s Best <span style={{ color: '#2563EB' }}>Engineering Talent</span>
+          Find India&apos;s Best <span style={{ color: '#047857' }}>Engineering Talent</span>
         </h1>
         <p style={S.heroSub}>
           Post jobs, verify your company, and connect with motivated candidates from top Indian engineering colleges.
@@ -298,7 +298,7 @@ export default function RecruiterClient() {
         {!user && (
           <div style={{ ...S.card, textAlign: 'center' }}>
             <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Sign In Required</h2>
-            <p style={{ color: '#475569', marginBottom: 24, fontSize: 14 }}>
+            <p style={{ color: '#435D52', marginBottom: 24, fontSize: 14 }}>
               Please sign in with your company email to access the Recruiter Panel.
             </p>
             <button
@@ -313,7 +313,7 @@ export default function RecruiterClient() {
         {user && !recruiter && (
           <div style={S.card}>
             <h2 style={S.h2}>Create Recruiter Account</h2>
-            <p style={{ color: '#475569', marginBottom: 24, fontSize: 13 }}>
+            <p style={{ color: '#435D52', marginBottom: 24, fontSize: 13 }}>
               Your account will be reviewed before public listings go live. Once verified, you can publish roles directly to the feed.
             </p>
             <div style={S.grid2}>
@@ -347,7 +347,7 @@ export default function RecruiterClient() {
                 <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>
                   {recruiter.company_name}
                 </h2>
-                <p style={{ color: '#475569', fontSize: 13, marginBottom: 12 }}>
+                <p style={{ color: '#435D52', fontSize: 13, marginBottom: 12 }}>
                   {recruiter.designation} • {recruiter.full_name}
                 </p>
                 <span style={recruiter.verified ? S.verifiedBadge : S.pendingBadge}>
@@ -368,9 +368,9 @@ export default function RecruiterClient() {
                   style={{
                     padding: '8px 18px',
                     borderRadius: 10,
-                    border: tab === t ? '1px solid #BFDBFE' : '1px solid #E2E8F0',
-                    background: tab === t ? '#EFF6FF' : '#FFFFFF',
-                    color: tab === t ? '#1D4ED8' : '#475569',
+                    border: tab === t ? '1px solid #A7F3D0' : '1px solid #D5E1DA',
+                    background: tab === t ? '#ECFDF5' : '#FFFFFF',
+                    color: tab === t ? '#065F46' : '#435D52',
                     fontSize: 13,
                     fontWeight: 600,
                     cursor: 'pointer'
@@ -387,7 +387,7 @@ export default function RecruiterClient() {
                 <h2 style={S.h2}>My Job Postings ({jobs.length})</h2>
                 {jobs.length === 0 ? (
                   <div style={{ ...S.card, textAlign: 'center' }}>
-                    <p style={{ color: '#475569' }}>No jobs posted yet.</p>
+                    <p style={{ color: '#435D52' }}>No jobs posted yet.</p>
                     <button
                       style={{ ...S.btnPrimary, marginTop: 16, width: 'auto', display: 'inline-block' }}
                       onClick={() => setTab('post')}
@@ -399,7 +399,7 @@ export default function RecruiterClient() {
                   <div key={job.id} style={S.jobCard}>
                     <div>
                       <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{job.title}</div>
-                      <div style={{ fontSize: 12, color: '#475569', marginBottom: 8 }}>
+                      <div style={{ fontSize: 12, color: '#435D52', marginBottom: 8 }}>
                         {job.location || 'Remote'} • {job.job_type}
                         {job.cgpa_cutoff ? ` • CGPA ≥ ${job.cgpa_cutoff}` : ''}
                       </div>
@@ -421,7 +421,7 @@ export default function RecruiterClient() {
                       }}>
                         {job.is_active ? 'Active' : 'Closed'}
                       </span>
-                      <div style={{ fontSize: 11, color: '#64748B', marginTop: 8 }}>
+                      <div style={{ fontSize: 11, color: '#5C756B', marginTop: 8 }}>
                         {new Date(job.created_at).toLocaleDateString('en-IN')}
                       </div>
                     </div>

@@ -22,10 +22,10 @@ interface TrackerClientProps {
 }
 
 const COLUMNS = [
-  { id: 'shortlisted', label: 'Shortlisted', color: 'border-blue-200 text-blue-700 bg-blue-50' },
+  { id: 'shortlisted', label: 'Shortlisted', color: 'border-emerald-200 text-emerald-700 bg-emerald-50' },
   { id: 'applied', label: 'Applied', color: 'border-amber-200 text-amber-700 bg-amber-50' },
   { id: 'oa', label: 'Online Assess.', color: 'border-purple-200 text-purple-700 bg-purple-50' },
-  { id: 'interview', label: 'Interviewing', color: 'border-indigo-200 text-indigo-700 bg-indigo-50' },
+  { id: 'interview', label: 'Interviewing', color: 'border-teal-200 text-teal-700 bg-teal-50' },
   { id: 'offer', label: 'Offer Received', color: 'border-emerald-200 text-emerald-700 bg-emerald-50' },
   { id: 'rejected', label: 'Rejected', color: 'border-rose-200 text-rose-700 bg-rose-50' },
 ];
@@ -203,7 +203,7 @@ export function TrackerClient({ initialSavedJobs }: TrackerClientProps) {
                       className={`p-3.5 rounded-xl border bg-bg-surface shadow-2xs cursor-grab active:cursor-grabbing transition-all space-y-2 ${
                         isBeingDragged
                           ? 'opacity-40 border-accent-400 ring-2 ring-accent-500/20'
-                          : 'border-border-subtle hover:border-blue-300 hover:shadow-sm'
+                          : 'border-border-subtle hover:border-emerald-300 hover:shadow-sm'
                       }`}
                     >
                       <div className="flex items-center justify-between">

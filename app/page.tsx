@@ -10,7 +10,8 @@ import {
   ArrowRight,
   FileCode,
   Bookmark,
-  Kanban
+  Kanban,
+  Clock
 } from 'lucide-react';
 
 function buildFilterUrl(
@@ -84,11 +85,21 @@ export default async function Home({
 
   let jobs: any[] | null = null;
   let error: any = null;
+  let upcomingDrives: any[] = [];
 
   try {
-    const res = await query;
-    jobs = res.data;
-    error = res.error;
+    const [jobsRes, drivesRes] = await Promise.all([
+      query,
+      supabase
+        .from('campus_drives')
+        .select('id, company, role_title, deadline')
+        .eq('approved', true)
+        .order('created_at', { ascending: false })
+        .limit(3)
+    ]);
+    jobs = jobsRes.data;
+    error = jobsRes.error;
+    upcomingDrives = drivesRes.data || [];
   } catch (err: any) {
     console.error('Failed to load jobs from Supabase:', err);
     error = { message: err.message || 'Database connection offline.' };
@@ -125,7 +136,6 @@ export default async function Home({
     console.error('Failed to retrieve user profile or fit scores:', err);
   }
 
-  // Profile completeness calculation for Career Companion Rail
   const profileFields = [
     userProfile?.full_name,
     userProfile?.college,
@@ -140,14 +150,14 @@ export default async function Home({
 
   return (
     <div className="w-full space-y-6">
-      {/* Hero Banner & Quick Search / Categories */}
+      {/* Botanical Hero Banner & Category Strip */}
       <Suspense fallback={<div className="h-44 bg-bg-surface border border-border-subtle rounded-2xl animate-pulse" />}>
         <FeedFilters totalShown={displayJobs.length} />
       </Suspense>
 
-      {/* 3-Zone Workspace: Left Filter Sidebar | Center Feed | Right Companion Rail */}
+      {/* Full-Width Top-Nav 3-Zone Workspace */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        {/* Left Filter Rail (Desktop) — Discrete Pill Options, NO sliders */}
+        {/* Left Refine Sidebar (Desktop) */}
         <aside className="hidden lg:block lg:col-span-3 sticky top-20 bg-bg-surface border border-border-subtle rounded-2xl p-4 space-y-5 shadow-2xs">
           <div className="flex items-center justify-between border-b border-border-subtle pb-3">
             <h2 className="text-xs font-display font-bold uppercase tracking-wider text-text-primary">
@@ -158,7 +168,7 @@ export default async function Home({
             </Link>
           </div>
 
-          {/* Role Filter */}
+          {/* Role Track */}
           <div className="space-y-2">
             <h3 className="text-xs font-semibold text-text-primary">Role Track</h3>
             <div className="flex flex-wrap gap-1.5">
@@ -175,7 +185,7 @@ export default async function Home({
                   href={buildFilterUrl(params, 'role', opt.val)}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-colors ${
                     roleCategory === opt.val
-                      ? 'bg-accent-50 border-accent-200 text-accent-600 font-semibold'
+                      ? 'bg-accent-50 border-accent-100 text-accent-600 font-semibold'
                       : 'bg-bg-elevated/60 border-transparent text-text-secondary hover:bg-bg-elevated hover:text-text-primary'
                   }`}
                 >
@@ -185,7 +195,7 @@ export default async function Home({
             </div>
           </div>
 
-          {/* Work Mode Filter */}
+          {/* Work Mode */}
           <div className="space-y-2">
             <h3 className="text-xs font-semibold text-text-primary">Work Mode</h3>
             <div className="space-y-1">
@@ -217,7 +227,7 @@ export default async function Home({
             </div>
           </div>
 
-          {/* Experience Level Filter */}
+          {/* Experience Level */}
           <div className="space-y-2">
             <h3 className="text-xs font-semibold text-text-primary">Experience Level</h3>
             <div className="space-y-1">
@@ -265,7 +275,7 @@ export default async function Home({
                   href={buildFilterUrl(params, 'ctc', opt.val)}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-colors ${
                     ctcBucket === opt.val
-                      ? 'bg-accent-50 border-accent-200 text-accent-600 font-semibold'
+                      ? 'bg-accent-50 border-accent-100 text-accent-600 font-semibold'
                       : 'bg-bg-elevated/60 border-transparent text-text-secondary hover:bg-bg-elevated hover:text-text-primary'
                   }`}
                 >
@@ -276,7 +286,7 @@ export default async function Home({
           </div>
         </aside>
 
-        {/* Center Jobs Feed */}
+        {/* Center Spacious Opportunity Feed */}
         <section className="lg:col-span-9 xl:col-span-6">
           {displayJobs.length === 0 ? (
             <div className="py-16 text-center bg-bg-surface border border-border-subtle rounded-2xl p-8 space-y-3 shadow-2xs">
@@ -297,15 +307,54 @@ export default async function Home({
           )}
         </section>
 
-        {/* Right Career Companion Rail (Desktop XL) */}
+        {/* Right Companion Rail: Profile Strength + Calendar Agenda + Resume Lab */}
         <aside className="hidden xl:flex xl:col-span-3 flex-col gap-4 sticky top-20">
+          {/* Calendar Deadlines Agenda (Concept 3 Signature Widget) */}
+          <div className="bg-bg-surface border border-border-subtle rounded-2xl p-4 space-y-3 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-display font-bold uppercase tracking-wider text-text-tertiary flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-accent-500" />
+                <span>Calendar Agenda</span>
+              </h2>
+              <Link href="/placement" className="text-[11px] font-semibold text-accent-600 hover:underline">
+                All Drives
+              </Link>
+            </div>
+
+            {upcomingDrives.length > 0 ? (
+              <div className="space-y-2">
+                {upcomingDrives.map((d) => (
+                  <div key={d.id} className="p-2.5 rounded-xl bg-bg-base border border-border-subtle text-xs flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-text-primary truncate">{d.company}</div>
+                      <div className="text-[11px] text-text-secondary truncate">{d.role_title}</div>
+                    </div>
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 shrink-0">
+                      {d.deadline ? new Date(d.deadline).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }) : 'Open'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-3 rounded-xl bg-bg-base border border-border-subtle text-xs text-text-secondary space-y-1.5">
+                <div className="flex items-center gap-1.5 font-semibold text-text-primary">
+                  <Clock className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Google Calendar Deadlines</span>
+                </div>
+                <p className="text-[11px] text-text-secondary">
+                  Sync your calendar on Profile or report off-campus drives to see live deadlines here.
+                </p>
+              </div>
+            )}
+          </div>
+
           {/* Profile Strength Card */}
           <div className="bg-bg-surface border border-border-subtle rounded-2xl p-4 space-y-3 shadow-2xs">
             <div className="flex items-center justify-between">
               <h2 className="text-xs font-display font-bold uppercase tracking-wider text-text-tertiary">
                 Profile Strength
               </h2>
-              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+              <span className="text-xs font-bold text-accent-600 bg-accent-50 border border-accent-100 px-2 py-0.5 rounded-full">
                 {userProfile ? `${profileStrength}%` : 'Guest'}
               </span>
             </div>
@@ -314,13 +363,13 @@ export default async function Home({
               <>
                 <div className="w-full h-2 bg-bg-elevated rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-emerald-500 rounded-full transition-all"
+                    className="h-full bg-accent-500 rounded-full transition-all"
                     style={{ width: `${profileStrength}%` }}
                   />
                 </div>
                 <p className="text-xs text-text-secondary">
                   {profileStrength < 100
-                    ? 'Add your CGPA, skills, and GitHub to unlock accurate eligibility chips & AI match %.'
+                    ? 'Add your CGPA, skills, and GitHub to unlock accurate eligibility badges & AI match %.'
                     : 'Your profile is complete for instant AI fit matching!'}
                 </p>
                 <Link
@@ -334,7 +383,7 @@ export default async function Home({
             ) : (
               <>
                 <p className="text-xs text-text-secondary">
-                  Sign in to unlock AI Match %, eligibility checks, and 1-click Google Calendar deadline sync.
+                  Sign in to unlock AI Match %, eligibility checks, and 1-click Google Calendar sync.
                 </p>
                 <Link
                   href="/auth/login"
@@ -347,12 +396,12 @@ export default async function Home({
             )}
           </div>
 
-          {/* Pipeline Shortcut Card */}
-          <div className="bg-bg-surface border border-border-subtle rounded-2xl p-4 space-y-3 shadow-2xs">
+          {/* Workspace Shortcuts */}
+          <div className="bg-bg-surface border border-border-subtle rounded-2xl p-4 space-y-2.5 shadow-2xs">
             <h2 className="text-xs font-display font-bold uppercase tracking-wider text-text-tertiary">
-              Your Job Workspace
+              Your Workspace
             </h2>
-            <div className="space-y-2 text-xs">
+            <div className="space-y-1.5 text-xs">
               <Link
                 href="/saved"
                 className="flex items-center justify-between p-2.5 rounded-xl bg-bg-base hover:bg-bg-elevated transition-colors"
@@ -368,7 +417,7 @@ export default async function Home({
                 className="flex items-center justify-between p-2.5 rounded-xl bg-bg-base hover:bg-bg-elevated transition-colors"
               >
                 <span className="flex items-center gap-2 font-medium text-text-primary">
-                  <Kanban className="w-4 h-4 text-emerald-600" />
+                  <Kanban className="w-4 h-4 text-accent-600" />
                   Application Pipeline
                 </span>
                 <ArrowRight className="w-3.5 h-3.5 text-text-tertiary" />
@@ -378,17 +427,17 @@ export default async function Home({
                 className="flex items-center justify-between p-2.5 rounded-xl bg-bg-base hover:bg-bg-elevated transition-colors"
               >
                 <span className="flex items-center gap-2 font-medium text-text-primary">
-                  <Calendar className="w-4 h-4 text-amber-600" />
-                  Google Calendar Alerts
+                  <CheckCircle2 className="w-4 h-4 text-amber-600" />
+                  Google Calendar Sync
                 </span>
-                <CheckCircle2 className="w-3.5 h-3.5 text-text-tertiary" />
+                <ArrowRight className="w-3.5 h-3.5 text-text-tertiary" />
               </Link>
             </div>
           </div>
 
-          {/* Free AI Resume Lab Card (Zero Paid Upsells) */}
-          <div className="rounded-2xl p-4 bg-gradient-to-br from-indigo-50 via-blue-50 to-white border border-indigo-100 space-y-2.5 shadow-2xs">
-            <div className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-indigo-700 bg-white px-2 py-0.5 rounded-full border border-indigo-100">
+          {/* Free AI Resume Lab Card */}
+          <div className="rounded-2xl p-4 bg-gradient-to-br from-emerald-50 via-white to-amber-50/60 border border-border-subtle space-y-2.5 shadow-2xs">
+            <div className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-accent-600 bg-white px-2 py-0.5 rounded-full border border-accent-100">
               <Sparkles className="w-3 h-3" /> 100% Free AI Tool
             </div>
             <h3 className="text-sm font-display font-bold text-text-primary">
@@ -399,7 +448,7 @@ export default async function Home({
             </p>
             <Link
               href="/resume-lab"
-              className="w-full py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+              className="w-full py-2 px-3 rounded-xl bg-accent-500 hover:bg-accent-600 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
             >
               <FileCode className="w-3.5 h-3.5" />
               <span>Open Resume Lab</span>

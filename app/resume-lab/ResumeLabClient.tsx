@@ -348,7 +348,7 @@ export function ResumeLabClient({ initialVersions, initialOutcomes }: ResumeLabC
                               // silent
                             }
                           }}
-                          className="flex items-center gap-1 text-xs font-semibold py-1 px-2.5 rounded-lg border bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100 transition-all"
+                          className="flex items-center gap-1 text-xs font-semibold py-1 px-2.5 rounded-lg border bg-amber-50 border-amber-200 text-amber-800 hover:bg-amber-100 transition-all"
                           title="Compare score anonymously with community"
                         >
                           Benchmark

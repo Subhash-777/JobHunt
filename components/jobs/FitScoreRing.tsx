@@ -17,9 +17,9 @@ export function FitScoreRing({ score }: { score: number | null | undefined }) {
 
   const ringColor =
     numericScore >= 75
-      ? '#059669'
+      ? '#047857'
       : numericScore >= 50
-        ? '#2563EB'
+        ? '#10B981'
         : '#94A3B8';
 
   if (score == null) {
@@ -36,7 +36,7 @@ export function FitScoreRing({ score }: { score: number | null | undefined }) {
   return (
     <div className="relative flex items-center justify-center w-10 h-10 shrink-0" title={`AI Match Score: ${numericScore}%`}>
       <svg width="40" height="40" viewBox="0 0 40 40" className="absolute inset-0">
-        <circle cx="20" cy="20" r={radius} fill="none" stroke="#E2E8F0" strokeWidth="3" />
+        <circle cx="20" cy="20" r={radius} fill="none" stroke="#D5E1DA" strokeWidth="3" />
         <motion.circle
           cx="20"
           cy="20"

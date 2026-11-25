@@ -122,7 +122,7 @@ export default async function InsightsPage() {
                         <span className="text-[11px] text-text-tertiary">{cnt} reports</span>
                       </div>
                       <div className="flex items-center gap-3 text-[11px] text-text-secondary">
-                        <span>OA: <strong className="text-indigo-600">{oaPct}%</strong></span>
+                        <span>OA: <strong className="text-amber-700">{oaPct}%</strong></span>
                         <span>Interview: <strong className="text-accent-600">{intPct}%</strong></span>
                         <span>Offer: <strong className="text-emerald-700">{offerPct}%</strong></span>
                       </div>
