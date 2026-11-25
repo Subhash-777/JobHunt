@@ -1,0 +1,15 @@
+#!/bin/sh
+ADDED=$(git diff --cached -U0 --diff-filter=ACMR -- . ':!package-lock.json' | grep -E '^\+[^+]')
+PAT='gsk_[A-Za-z0-9]{20,}|sk-or-[A-Za-z0-9-]{20,}|AIza[0-9A-Za-z_-]{30,}|GOCSPX-[A-Za-z0-9_-]+|sb_secret_[A-Za-z0-9_-]{20,}|hf_[A-Za-z0-9]{30,}|(ghp_|github_pat_)[A-Za-z0-9_]{20,}|postgres(ql)?://[^:[:space:]]+:[^@[:space:]]+@'
+if echo "$ADDED" | grep -qE "$PAT"; then
+  echo "BLOCKED: credential pattern in staged changes"; exit 1
+fi
+echo "$ADDED" | grep -oE 'eyJ[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}' | python3 -c '
+import sys, base64, json
+bad = 0
+for t in sys.stdin.read().split():
+    p = t.split(".")[1]; p += "=" * (-len(p) % 4)
+    try: role = json.loads(base64.urlsafe_b64decode(p)).get("role")
+    except Exception: role = "unparseable"
+    if role != "anon": bad += 1
+sys.exit(1 if bad else 0)' || { echo "BLOCKED: non-anon JWT in staged changes"; exit 1; }

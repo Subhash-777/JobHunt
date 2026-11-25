@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Scratch files & local dumps
+/test_*.js
+/parse_*.js
+/hirist_jobs.json
+/jobspy_out.json
+/out.json
+*.log
+*.pid
