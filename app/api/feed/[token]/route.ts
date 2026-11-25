@@ -23,7 +23,7 @@ export async function GET(
   // Resolve profile by rss_feed_token (live DB column; rss_token was renamed)
   const { data: profile, error: profileErr } = await supabase
     .from('profiles')
-    .select('user_id, full_name')
+    .select('id, full_name')
     .eq('rss_feed_token', token)
     .single()
 
@@ -35,22 +35,22 @@ export async function GET(
   const { data: savedJobs, error: jobsErr } = await supabase
     .from('saved_jobs')
     .select(`
-      created_at,
-      stage,
+      saved_at,
+      folder,
       jobs (
         id,
         title,
         company,
         location,
-        apply_link,
+        apply_url,
         description,
-        ingested_at,
-        job_type,
-        source
+        created_at,
+        employment_type,
+        source_name
       )
     `)
-    .eq('user_id', profile.user_id)
-    .order('created_at', { ascending: false })
+    .eq('user_id', profile.id)
+    .order('saved_at', { ascending: false })
     .limit(50)
 
   if (jobsErr) {
@@ -59,13 +59,23 @@ export async function GET(
   }
 
   const items = (savedJobs ?? []).map(row => {
-    const job = row.jobs as unknown as Record<string, string>
+    const job = row.jobs as unknown as {
+      id: string;
+      title: string;
+      company: string;
+      location: string[] | string | null;
+      apply_url: string | null;
+      description: string | null;
+      created_at: string;
+      employment_type: string | null;
+      source_name: string | null;
+    } | null
     if (!job) return ''
 
-    const pub = new Date(row.created_at).toUTCString()
-    const link = job.apply_link || `https://subhash-jobhunt.vercel.app/jobs/${job.id}`
+    const pub = new Date(row.saved_at).toUTCString()
+    const link = job.apply_url || `https://subhash-jobhunt.vercel.app/jobs/${job.id}`
     const desc = escapeXml(
-      (job.description || '').substring(0, 500) + (job.description?.length > 500 ? '…' : '')
+      (job.description || '').substring(0, 500) + ((job.description?.length ?? 0) > 500 ? '…' : '')
     )
 
     return `
@@ -74,11 +84,11 @@ export async function GET(
       <link>${escapeXml(link)}</link>
       <guid isPermaLink="false">jobhunt-${job.id}</guid>
       <pubDate>${pub}</pubDate>
-      <category>${escapeXml(row.stage || 'saved')}</category>
+      <category>${escapeXml(row.folder || 'saved')}</category>
       <description>${desc}</description>
-      <jobhunt:location>${escapeXml(job.location || 'Remote')}</jobhunt:location>
-      <jobhunt:type>${escapeXml(job.job_type || 'full-time')}</jobhunt:type>
-      <jobhunt:source>${escapeXml(job.source || '')}</jobhunt:source>
+      <jobhunt:location>${escapeXml(Array.isArray(job.location) ? job.location.join(', ') : (job.location || 'Remote'))}</jobhunt:location>
+      <jobhunt:type>${escapeXml(job.employment_type || 'full-time')}</jobhunt:type>
+      <jobhunt:source>${escapeXml(job.source_name || '')}</jobhunt:source>
     </item>`
   }).filter(Boolean).join('\n')
 

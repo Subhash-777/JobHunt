@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseRoute } from '@/lib/supabase/route-handler';
+import { supabaseAdmin } from '@/lib/supabase/server';
 
 export async function GET(request: Request) {
   try {
@@ -71,6 +72,7 @@ export async function GET(request: Request) {
       google_email: googleEmail,
       access_token,
       token_expiry: tokenExpiry,
+      needs_reconnect: false,
     };
 
     // Note: Google only sends the refresh_token on the first authorization.
@@ -79,8 +81,9 @@ export async function GET(request: Request) {
       payload.refresh_token = refresh_token;
     }
 
-    // 3. Upsert to calendar_links
-    const { error: upsertError } = await supabase
+    // 3. Upsert to calendar_links (service-role required since client SELECT/write RLS locked down)
+    const admin = supabaseAdmin();
+    const { error: upsertError } = await admin
       .from('calendar_links')
       .upsert(payload, { onConflict: 'user_id' });
 

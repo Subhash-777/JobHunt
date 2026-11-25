@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, supabaseAdmin } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { ProfileForm } from './ProfileForm';
 
@@ -16,9 +16,10 @@ export default async function ProfilePage() {
     .eq('id', user.id)
     .single();
 
-  const { data: calendarLink } = await supabase
+  const admin = supabaseAdmin();
+  const { data: calendarLink } = await admin
     .from('calendar_links')
-    .select('*')
+    .select('google_email, sync_mode, connected_at, last_synced_at, needs_reconnect')
     .eq('user_id', user.id)
     .maybeSingle();
 

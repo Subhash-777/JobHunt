@@ -596,8 +596,11 @@ export function ProfileForm({ profile, user, calendarLink }: ProfileFormProps) {
             </div>
             <button
               onClick={async () => {
-                const supabase = createClient();
-                await supabase.from('calendar_links').delete().eq('user_id', user.id);
+                const res = await fetch('/api/calendar/google/disconnect', { method: 'DELETE' });
+                if (!res.ok) {
+                  toast.error('Failed to disconnect calendar.');
+                  return;
+                }
                 setCalendar(null);
                 toast.success('Calendar disconnected.');
                 router.refresh();
