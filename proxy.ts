@@ -55,7 +55,7 @@ export async function proxy(request: NextRequest) {
 
     // ── Admin-only routes (server-side enforcement) ────────────────────────────
     if (pathname.startsWith('/admin')) {
-      const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+      const adminEmail = process.env.ADMIN_EMAIL;
       if (!user || (adminEmail && user.email !== adminEmail)) {
         return NextResponse.redirect(new URL('/', request.url));
       }

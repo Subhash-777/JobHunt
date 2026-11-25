@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'subhash@jobhunt.dev'
+// Authorization is enforced by proxy.ts middleware; no NEXT_PUBLIC_ADMIN_EMAIL needed here
 
 interface SourceStat {
   source: string
@@ -67,7 +67,9 @@ export default function AdminSourceHealthClient() {
 
   const checkAuth = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user?.email || user.email !== ADMIN_EMAIL) {
+    // Authorization gate is enforced by proxy.ts middleware.
+    // Client-side check only verifies the user is logged in at all.
+    if (!user?.email) {
       setAuthorized(false)
       return false
     }

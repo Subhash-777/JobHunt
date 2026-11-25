@@ -13,3 +13,4 @@ for t in sys.stdin.read().split():
     except Exception: role = "unparseable"
     if role != "anon": bad += 1
 sys.exit(1 if bad else 0)' || { echo "BLOCKED: non-anon JWT in staged changes"; exit 1; }
+

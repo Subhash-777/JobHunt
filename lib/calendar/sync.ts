@@ -47,6 +47,15 @@ export async function getFreshAccessToken(userId: string): Promise<string | null
     if (!res.ok) {
       const errText = await res.text();
       console.error('Failed to refresh Google OAuth token:', errText);
+      // If the refresh token was revoked or expired, mark the account as needing reconnect
+      if (errText.includes('invalid_grant')) {
+        const supabaseForUpdate = supabaseAdmin();
+        await supabaseForUpdate
+          .from('calendar_links')
+          .update({ needs_reconnect: true })
+          .eq('user_id', userId);
+        console.error('[calendar] invalid_grant — marked needs_reconnect for user', userId);
+      }
       return null;
     }
 
