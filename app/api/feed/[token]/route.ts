@@ -20,11 +20,11 @@ export async function GET(
     return new NextResponse('Invalid token', { status: 400 })
   }
 
-  // Resolve profile by rss_token
+  // Resolve profile by rss_feed_token (live DB column; rss_token was renamed)
   const { data: profile, error: profileErr } = await supabase
     .from('profiles')
     .select('user_id, full_name')
-    .eq('rss_token', token)
+    .eq('rss_feed_token', token)
     .single()
 
   if (profileErr || !profile) {

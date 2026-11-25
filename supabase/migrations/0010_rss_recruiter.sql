@@ -3,11 +3,11 @@
 
 -- ─── RSS token per profile ────────────────────────────────────────────────────
 ALTER TABLE profiles
-  ADD COLUMN IF NOT EXISTS rss_token TEXT UNIQUE DEFAULT gen_random_uuid()::text
+  ADD COLUMN IF NOT EXISTS rss_feed_token TEXT UNIQUE DEFAULT gen_random_uuid()::text
 ;
 
 -- Ensure every existing profile has a token
-UPDATE profiles SET rss_token = gen_random_uuid()::text WHERE rss_token IS NULL;
+UPDATE profiles SET rss_feed_token = gen_random_uuid()::text WHERE rss_feed_token IS NULL;
 
 -- ─── Recruiter accounts ───────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS recruiters (

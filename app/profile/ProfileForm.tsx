@@ -549,7 +549,7 @@ export function ProfileForm({ profile, user, calendarLink }: ProfileFormProps) {
       )}
 
       {/* RSS Feed Card */}
-      {profile.rss_token && (
+      {profile.rss_feed_token && (
         <div className="bg-bg-surface border border-border-subtle rounded-2xl p-5 space-y-4">
           <h2 className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center space-x-2 border-b border-border-subtle pb-3">
             <span>📡</span>
@@ -561,13 +561,13 @@ export function ProfileForm({ profile, user, calendarLink }: ProfileFormProps) {
             </p>
             <div className="flex items-center gap-2">
               <code className="flex-1 text-[11px] font-mono text-accent-400 bg-bg-surface px-3 py-2 rounded-lg border border-border-subtle truncate">
-                {`${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://subhash-jobhunt.vercel.app'}/api/feed/${profile.rss_token}.xml`}
+                {`${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://subhash-jobhunt.vercel.app'}/api/feed/${profile.rss_feed_token}.xml`}
               </code>
               <button
                 type="button"
                 onClick={() => {
                   navigator.clipboard.writeText(
-                    `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://subhash-jobhunt.vercel.app'}/api/feed/${profile.rss_token}.xml`
+                    `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://subhash-jobhunt.vercel.app'}/api/feed/${profile.rss_feed_token}.xml`
                   );
                   toast.success('RSS URL copied!');
                 }}
