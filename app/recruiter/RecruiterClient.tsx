@@ -3,8 +3,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-// ─── Types ─────────────────────────────────────────────────────────────────────
-
 interface Recruiter {
   id: string
   full_name: string
@@ -26,87 +24,84 @@ interface RecruiterJob {
   created_at: string
 }
 
-// ─── Styles ────────────────────────────────────────────────────────────────────
-
 const S: Record<string, React.CSSProperties> = {
   page: {
     minHeight: '100vh',
-    background: '#0a0a12',
-    color: '#e8e6e3',
-    fontFamily: "'Inter', sans-serif"
+    color: '#0F172A',
+    fontFamily: 'inherit'
   },
   hero: {
-    background: 'linear-gradient(135deg, #0f0f1a 0%, #1a0f00 100%)',
-    borderBottom: '1px solid rgba(255,107,53,0.15)',
-    padding: '60px 24px',
-    textAlign: 'center'
-  },
-  heroTitle: { fontSize: 'clamp(28px, 5vw, 48px)', fontWeight: 800, marginBottom: 16 },
-  heroSub: { fontSize: 16, color: '#9a9896', maxWidth: 520, margin: '0 auto 32px' },
-  heroChips: { display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' },
-  chip: {
-    background: 'rgba(255,107,53,0.1)',
-    border: '1px solid rgba(255,107,53,0.25)',
+    background: 'linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 55%, #EEF2FF 100%)',
+    border: '1px solid #E2E8F0',
     borderRadius: 20,
-    padding: '6px 16px',
-    fontSize: 13,
-    color: '#FF8C42'
-  },
-  container: { maxWidth: 960, margin: '0 auto', padding: '40px 24px' },
-  card: {
-    background: 'rgba(255,255,255,0.04)',
-    border: '1px solid rgba(255,255,255,0.09)',
-    borderRadius: 20,
-    padding: 32,
+    padding: '44px 24px',
+    textAlign: 'center',
     marginBottom: 24
   },
-  h2: { fontSize: 20, fontWeight: 700, marginBottom: 24 },
-  h3: { fontSize: 16, fontWeight: 600, marginBottom: 16 },
-  grid2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 },
+  heroTitle: { fontSize: 'clamp(26px, 4vw, 40px)', fontWeight: 800, marginBottom: 12, color: '#0F172A' },
+  heroSub: { fontSize: 15, color: '#475569', maxWidth: 540, margin: '0 auto 24px' },
+  heroChips: { display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap' },
+  chip: {
+    background: '#FFFFFF',
+    border: '1px solid #DBEAFE',
+    borderRadius: 999,
+    padding: '6px 14px',
+    fontSize: 12,
+    fontWeight: 600,
+    color: '#1D4ED8'
+  },
+  container: { maxWidth: 920, margin: '0 auto', padding: '8px 0 40px' },
+  card: {
+    background: '#FFFFFF',
+    border: '1px solid #E2E8F0',
+    borderRadius: 18,
+    padding: 28,
+    marginBottom: 20,
+    boxShadow: '0 1px 3px rgba(15,23,42,0.05)'
+  },
+  h2: { fontSize: 18, fontWeight: 700, marginBottom: 20, color: '#0F172A' },
+  grid2: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 },
   field: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 },
-  label: { fontSize: 12, fontWeight: 600, color: '#9a9896', textTransform: 'uppercase', letterSpacing: '0.05em' },
+  label: { fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em' },
   input: {
-    background: 'rgba(255,255,255,0.06)',
-    border: '1px solid rgba(255,255,255,0.12)',
+    background: '#F8FAFC',
+    border: '1px solid #E2E8F0',
     borderRadius: 10,
     padding: '10px 14px',
-    color: '#e8e6e3',
-    fontFamily: "'Inter', sans-serif",
+    color: '#0F172A',
     fontSize: 14,
     outline: 'none',
     width: '100%',
     boxSizing: 'border-box' as const
   },
   btnPrimary: {
-    background: 'linear-gradient(135deg, #FF6B35, #FF8C42)',
-    color: '#fff',
+    background: '#2563EB',
+    color: '#FFFFFF',
     border: 'none',
     borderRadius: 10,
-    padding: '12px 28px',
-    fontFamily: "'Inter', sans-serif",
+    padding: '11px 24px',
     fontSize: 14,
     fontWeight: 600,
     cursor: 'pointer',
     width: '100%'
   },
   btnSecondary: {
-    background: 'rgba(255,255,255,0.06)',
-    color: '#e8e6e3',
-    border: '1px solid rgba(255,255,255,0.12)',
+    background: '#F1F5F9',
+    color: '#0F172A',
+    border: '1px solid #CBD5E1',
     borderRadius: 10,
-    padding: '10px 20px',
-    fontFamily: "'Inter', sans-serif",
+    padding: '9px 18px',
     fontSize: 13,
-    fontWeight: 500,
+    fontWeight: 600,
     cursor: 'pointer'
   },
   verifiedBadge: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: 6,
-    background: 'rgba(34,197,94,0.12)',
-    border: '1px solid rgba(34,197,94,0.3)',
-    color: '#22c55e',
+    background: '#ECFDF5',
+    border: '1px solid #A7F3D0',
+    color: '#047857',
     borderRadius: 20,
     padding: '4px 12px',
     fontSize: 12,
@@ -116,48 +111,48 @@ const S: Record<string, React.CSSProperties> = {
     display: 'inline-flex',
     alignItems: 'center',
     gap: 6,
-    background: 'rgba(245,158,11,0.12)',
-    border: '1px solid rgba(245,158,11,0.3)',
-    color: '#f59e0b',
+    background: '#FFFBEB',
+    border: '1px solid #FDE68A',
+    color: '#B45309',
     borderRadius: 20,
     padding: '4px 12px',
     fontSize: 12,
     fontWeight: 600
   },
   jobCard: {
-    background: 'rgba(255,255,255,0.03)',
-    border: '1px solid rgba(255,255,255,0.08)',
+    background: '#FFFFFF',
+    border: '1px solid #E2E8F0',
     borderRadius: 14,
     padding: '18px 20px',
     marginBottom: 12,
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    gap: 16
+    gap: 16,
+    boxShadow: '0 1px 2px rgba(15,23,42,0.04)'
   },
   skillChip: {
-    background: 'rgba(59,130,246,0.12)',
-    border: '1px solid rgba(59,130,246,0.25)',
-    color: '#60a5fa',
+    background: '#EFF6FF',
+    border: '1px solid #DBEAFE',
+    color: '#1D4ED8',
     borderRadius: 6,
     padding: '2px 8px',
     fontSize: 11,
-    fontWeight: 500
+    fontWeight: 600
   },
   toast: {
     position: 'fixed' as const,
     bottom: 24,
     right: 24,
-    padding: '14px 20px',
+    padding: '12px 18px',
     borderRadius: 12,
-    fontSize: 14,
-    fontWeight: 500,
+    fontSize: 13,
+    fontWeight: 600,
     zIndex: 9999,
-    maxWidth: 320
+    maxWidth: 320,
+    boxShadow: '0 8px 24px rgba(15,23,42,0.12)'
   }
 }
-
-// ─── Component ─────────────────────────────────────────────────────────────────
 
 export default function RecruiterClient() {
   const supabase = createClient()
@@ -168,7 +163,6 @@ export default function RecruiterClient() {
   const [loading, setLoading]     = useState(true)
   const [toastMsg, setToastMsg]   = useState<{ text: string; type: 'ok' | 'err' } | null>(null)
 
-  // Form state
   const [signupForm, setSignupForm] = useState({
     full_name: '', company_name: '', company_domain: '', designation: ''
   })
@@ -215,7 +209,6 @@ export default function RecruiterClient() {
     init()
   }, [supabase, fetchRecruiterData])
 
-  // ── Signup handler ─────────────────────────────────────────────────────────
   const handleSignup = async () => {
     if (!user?.id) { showToast('Please sign in first', 'err'); return }
     if (!signupForm.full_name || !signupForm.company_name) {
@@ -247,10 +240,9 @@ export default function RecruiterClient() {
 
     setRecruiter(data as Recruiter)
     setTab('dashboard')
-    showToast('🎉 Recruiter account created! Verification pending.')
+    showToast('Recruiter account created! Verification pending.')
   }
 
-  // ── Post job handler ───────────────────────────────────────────────────────
   const handlePostJob = async () => {
     if (!recruiter?.id) return
     if (!jobForm.title || !jobForm.apply_link) {
@@ -272,7 +264,7 @@ export default function RecruiterClient() {
 
     if (error) { showToast(`Error: ${error.message}`, 'err'); return }
 
-    showToast('✅ Job posted successfully!')
+    showToast('Job posted successfully!')
     setJobForm({ title: '', location: '', job_type: 'full-time', skills: '', cgpa_cutoff: '', apply_link: '', description: '' })
     setTab('dashboard')
     await fetchRecruiterData(user!.id)
@@ -280,49 +272,49 @@ export default function RecruiterClient() {
 
   if (loading) {
     return (
-      <div style={{ ...S.page, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-        <p style={{ color: '#9a9896' }}>Loading…</p>
+      <div style={{ ...S.page, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+        <p style={{ color: '#64748B' }}>Loading recruiter panel…</p>
       </div>
     )
   }
 
   return (
     <div style={S.page}>
-      {/* Hero */}
       <div style={S.hero}>
         <h1 style={S.heroTitle}>
-          Find India&apos;s Best <span style={{ color: '#FF6B35' }}>Engineering Talent</span>
+          Find India&apos;s Best <span style={{ color: '#2563EB' }}>Engineering Talent</span>
         </h1>
         <p style={S.heroSub}>
-          Post jobs, verify your company, and connect directly with motivated candidates from IITs, NITs, and top engineering colleges.
+          Post jobs, verify your company, and connect with motivated candidates from top Indian engineering colleges.
         </p>
         <div style={S.heroChips}>
-          {['🎓 1,000+ active candidates', '🏆 Top college talent', '⚡ 48h avg response', '🔒 Verified companies only'].map(c => (
+          {['Active Candidates', 'Top College Talent', 'Zero Listing Fee', 'Verified Companies Only'].map(c => (
             <span key={c} style={S.chip}>{c}</span>
           ))}
         </div>
       </div>
 
       <div style={S.container}>
-        {/* Not signed in */}
         {!user && (
           <div style={{ ...S.card, textAlign: 'center' }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>🔐</div>
             <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Sign In Required</h2>
-            <p style={{ color: '#9a9896', marginBottom: 24 }}>Please sign in with your company email to access the Recruiter Panel.</p>
-            <button style={{ ...S.btnPrimary, width: 'auto', display: 'inline-block' }}
-              onClick={() => window.location.href = '/auth'}>
+            <p style={{ color: '#475569', marginBottom: 24, fontSize: 14 }}>
+              Please sign in with your company email to access the Recruiter Panel.
+            </p>
+            <button
+              style={{ ...S.btnPrimary, width: 'auto', display: 'inline-block' }}
+              onClick={() => window.location.href = '/auth/login?next=/recruiter'}
+            >
               Sign In / Register →
             </button>
           </div>
         )}
 
-        {/* Recruiter signup */}
         {user && !recruiter && (
           <div style={S.card}>
-            <h2 style={S.h2}>🏢 Create Recruiter Account</h2>
-            <p style={{ color: '#9a9896', marginBottom: 24, fontSize: 13 }}>
-              Your account will be reviewed within 24 hours. Once verified, you can post jobs and browse candidates.
+            <h2 style={S.h2}>Create Recruiter Account</h2>
+            <p style={{ color: '#475569', marginBottom: 24, fontSize: 13 }}>
+              Your account will be reviewed before public listings go live. Once verified, you can publish roles directly to the feed.
             </p>
             <div style={S.grid2}>
               {[
@@ -348,20 +340,18 @@ export default function RecruiterClient() {
           </div>
         )}
 
-        {/* Recruiter dashboard */}
         {recruiter && (
           <>
-            {/* Profile header */}
-            <div style={{ ...S.card, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ ...S.card, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
               <div>
                 <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>
                   {recruiter.company_name}
                 </h2>
-                <p style={{ color: '#9a9896', fontSize: 13, marginBottom: 12 }}>
+                <p style={{ color: '#475569', fontSize: 13, marginBottom: 12 }}>
                   {recruiter.designation} • {recruiter.full_name}
                 </p>
                 <span style={recruiter.verified ? S.verifiedBadge : S.pendingBadge}>
-                  {recruiter.verified ? '✅ Verified' : '⏳ Pending Verification'}
+                  {recruiter.verified ? 'Verified' : 'Pending Verification'}
                 </span>
               </div>
               <div style={{ display: 'flex', gap: 10 }}>
@@ -371,47 +361,46 @@ export default function RecruiterClient() {
               </div>
             </div>
 
-            {/* Tab switcher */}
-            <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
+            <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
               {(['dashboard', 'post'] as const).map(t => (
                 <button
                   key={t}
                   style={{
-                    padding: '8px 20px',
+                    padding: '8px 18px',
                     borderRadius: 10,
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    background: tab === t ? 'rgba(255,107,53,0.15)' : 'transparent',
-                    color: tab === t ? '#FF6B35' : '#9a9896',
-                    fontFamily: "'Inter', sans-serif",
+                    border: tab === t ? '1px solid #BFDBFE' : '1px solid #E2E8F0',
+                    background: tab === t ? '#EFF6FF' : '#FFFFFF',
+                    color: tab === t ? '#1D4ED8' : '#475569',
                     fontSize: 13,
                     fontWeight: 600,
                     cursor: 'pointer'
                   }}
                   onClick={() => setTab(t)}
                 >
-                  {t === 'dashboard' ? '📊 My Postings' : '➕ Post Job'}
+                  {t === 'dashboard' ? 'My Postings' : '+ Post Job'}
                 </button>
               ))}
             </div>
 
-            {/* My Postings */}
             {tab === 'dashboard' && (
               <div>
                 <h2 style={S.h2}>My Job Postings ({jobs.length})</h2>
                 {jobs.length === 0 ? (
                   <div style={{ ...S.card, textAlign: 'center' }}>
-                    <p style={{ color: '#9a9896' }}>No jobs posted yet.</p>
-                    <button style={{ ...S.btnPrimary, marginTop: 16, width: 'auto', display: 'inline-block' }}
-                      onClick={() => setTab('post')}>
+                    <p style={{ color: '#475569' }}>No jobs posted yet.</p>
+                    <button
+                      style={{ ...S.btnPrimary, marginTop: 16, width: 'auto', display: 'inline-block' }}
+                      onClick={() => setTab('post')}
+                    >
                       Post Your First Job →
                     </button>
                   </div>
                 ) : jobs.map(job => (
                   <div key={job.id} style={S.jobCard}>
                     <div>
-                      <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 4 }}>{job.title}</div>
-                      <div style={{ fontSize: 12, color: '#9a9896', marginBottom: 8 }}>
-                        📍 {job.location || 'Remote'} • {job.job_type}
+                      <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{job.title}</div>
+                      <div style={{ fontSize: 12, color: '#475569', marginBottom: 8 }}>
+                        {job.location || 'Remote'} • {job.job_type}
                         {job.cgpa_cutoff ? ` • CGPA ≥ ${job.cgpa_cutoff}` : ''}
                       </div>
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -422,9 +411,9 @@ export default function RecruiterClient() {
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       <span style={{
-                        background: job.is_active ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
-                        color: job.is_active ? '#22c55e' : '#ef4444',
-                        border: `1px solid ${job.is_active ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
+                        background: job.is_active ? '#ECFDF5' : '#FEF2F2',
+                        color: job.is_active ? '#047857' : '#DC2626',
+                        border: `1px solid ${job.is_active ? '#A7F3D0' : '#FECACA'}`,
                         borderRadius: 20,
                         padding: '3px 10px',
                         fontSize: 11,
@@ -432,7 +421,7 @@ export default function RecruiterClient() {
                       }}>
                         {job.is_active ? 'Active' : 'Closed'}
                       </span>
-                      <div style={{ fontSize: 11, color: '#9a9896', marginTop: 8 }}>
+                      <div style={{ fontSize: 11, color: '#64748B', marginTop: 8 }}>
                         {new Date(job.created_at).toLocaleDateString('en-IN')}
                       </div>
                     </div>
@@ -441,10 +430,9 @@ export default function RecruiterClient() {
               </div>
             )}
 
-            {/* Post job form */}
             {tab === 'post' && (
               <div style={S.card}>
-                <h2 style={S.h2}>➕ Post a New Job</h2>
+                <h2 style={S.h2}>Post a New Job</h2>
                 <div style={S.grid2}>
                   {[
                     { key: 'title',       label: 'Job Title *',       placeholder: 'Software Engineer Intern' },
@@ -497,13 +485,12 @@ export default function RecruiterClient() {
         )}
       </div>
 
-      {/* Toast */}
       {toastMsg && (
         <div style={{
           ...S.toast,
-          background: toastMsg.type === 'ok' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
-          border: `1px solid ${toastMsg.type === 'ok' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
-          color: toastMsg.type === 'ok' ? '#22c55e' : '#ef4444'
+          background: toastMsg.type === 'ok' ? '#ECFDF5' : '#FEF2F2',
+          border: `1px solid ${toastMsg.type === 'ok' ? '#A7F3D0' : '#FECACA'}`,
+          color: toastMsg.type === 'ok' ? '#047857' : '#DC2626'
         }}>
           {toastMsg.text}
         </div>

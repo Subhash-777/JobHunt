@@ -24,20 +24,19 @@ export default async function ProfilePage() {
     .maybeSingle();
 
   return (
-    <main className="min-h-screen max-w-3xl mx-auto p-4 pt-10 pb-20">
-      <header className="mb-8 border-b border-white/10 pb-6">
-        <h1 className="text-3xl font-bold tracking-tight mb-2">Profile</h1>
-        <p className="text-gray-400">Manage your skills, experience, and tracked jobs.</p>
+    <main className="min-h-screen max-w-3xl mx-auto p-2 sm:p-4 pt-4 pb-20">
+      <header className="mb-6 border-b border-border-subtle pb-5">
+        <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-text-primary mb-1.5">Profile & Calendar</h1>
+        <p className="text-xs sm:text-sm text-text-secondary">Manage your skills, academic eligibility, RSS feed, and Google Calendar sync.</p>
       </header>
 
       <section className="space-y-6">
         <ProfileForm profile={profile || {}} user={user} calendarLink={calendarLink} />
 
-        <div className="p-5 bg-bg-surface border border-white/5 rounded-xl mt-6">
-          <h2 className="text-xl font-semibold mb-4">My Tracked Jobs</h2>
-          <div className="text-sm text-gray-400 flex flex-col items-center justify-center py-8">
-            <span className="text-4xl mb-3 opacity-50">📂</span>
-            <p>You haven't saved any jobs yet.</p>
+        <div className="p-5 bg-bg-surface border border-border-subtle rounded-2xl mt-6 shadow-2xs">
+          <h2 className="text-base font-display font-bold text-text-primary mb-3">My Tracked Jobs</h2>
+          <div className="text-xs sm:text-sm text-text-secondary flex flex-col items-center justify-center py-6">
+            <p>Manage all your saved and tracked jobs from the <a href="/tracker" className="text-accent-600 font-semibold hover:underline">Application Pipeline</a>.</p>
           </div>
         </div>
       </section>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Bookmark, Trash2, Folder, ExternalLink, Calendar, CheckSquare, Square, ArrowRight } from 'lucide-react';
+import { Bookmark, Trash2, Folder, CheckSquare, Square } from 'lucide-react';
 import { Drawer } from '@/components/shared/Drawer';
 import { toast } from 'sonner';
 
@@ -57,7 +57,7 @@ export function SavedJobsClient({ initialSavedJobs }: SavedJobsClientProps) {
         );
         toast.success(`Moved to ${newFolder.toUpperCase()}`);
       }
-    } catch (err) {
+    } catch {
       toast.error('Failed to update stage.');
     } finally {
       setIsUpdating(null);
@@ -76,7 +76,7 @@ export function SavedJobsClient({ initialSavedJobs }: SavedJobsClientProps) {
         }
         toast.success('Removed from saved jobs.');
       }
-    } catch (err) {
+    } catch {
       toast.error('Failed to remove saved job.');
     }
   };
@@ -88,7 +88,7 @@ export function SavedJobsClient({ initialSavedJobs }: SavedJobsClientProps) {
   };
 
   const handleBulkMove = async (targetFolder: string) => {
-    if (selectedIds.length === 0) return;
+    if (selectedIds.length === 0 || !targetFolder) return;
     try {
       await Promise.all(
         selectedIds.map(jobId =>
@@ -104,27 +104,26 @@ export function SavedJobsClient({ initialSavedJobs }: SavedJobsClientProps) {
       );
       setSelectedIds([]);
       toast.success(`Moved ${selectedIds.length} jobs to ${targetFolder.toUpperCase()}`);
-    } catch (err) {
+    } catch {
       toast.error('Bulk move failed.');
     }
   };
 
   return (
     <div className="w-full space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border-subtle">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary flex items-center gap-2">
+          <h1 className="text-2xl font-display font-extrabold text-text-primary flex items-center gap-2">
             <Bookmark className="w-6 h-6 text-accent-500" />
             <span>Saved Jobs & Shortlists</span>
           </h1>
-          <p className="text-xs text-text-secondary mt-1">
-            Review bookmarked roles, filter by pipeline stage, or perform bulk updates.
+          <p className="text-xs sm:text-sm text-text-secondary mt-1">
+            Review bookmarked roles, filter by pipeline stage, or perform bulk stage updates.
           </p>
         </div>
       </div>
 
-      {/* Sliding Tabs */}
+      {/* Category Tabs */}
       <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 no-scrollbar">
         {FOLDERS.map((f) => {
           const isActive = activeFolder === f.id;
@@ -133,19 +132,12 @@ export function SavedJobsClient({ initialSavedJobs }: SavedJobsClientProps) {
             <button
               key={f.id}
               onClick={() => setActiveFolder(f.id)}
-              className={`relative px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border transition-all ${
                 isActive
-                  ? 'text-accent-400 font-semibold'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface'
+                  ? 'bg-accent-500 text-white border-accent-500 shadow-xs'
+                  : 'bg-white text-text-secondary border-border-subtle hover:border-border-default hover:text-text-primary'
               }`}
             >
-              {isActive && (
-                <motion.div
-                  layoutId="saved-tab-indicator"
-                  className="absolute inset-0 bg-accent-500/15 border border-accent-500/30 rounded-full -z-10"
-                  transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                />
-              )}
               {f.label} ({count})
             </button>
           );
@@ -154,11 +146,11 @@ export function SavedJobsClient({ initialSavedJobs }: SavedJobsClientProps) {
 
       {/* List */}
       {filteredJobs.length === 0 ? (
-        <div className="text-center py-16 bg-bg-surface border border-border-subtle rounded-2xl p-8 space-y-3">
-          <Folder className="mx-auto text-text-tertiary w-10 h-10 opacity-50" />
-          <h3 className="text-sm font-semibold text-text-primary">No saved jobs in this category</h3>
-          <p className="text-xs text-text-tertiary">
-            Jobs you bookmark from the main opportunity feed will be organized here.
+        <div className="text-center py-16 bg-bg-surface border border-border-subtle rounded-2xl p-8 space-y-3 shadow-2xs">
+          <Folder className="mx-auto text-text-tertiary w-10 h-10 opacity-60" />
+          <h2 className="text-sm font-semibold text-text-primary">No saved jobs in this category</h2>
+          <p className="text-xs text-text-secondary">
+            Jobs you bookmark from the main opportunity feed will appear here.
           </p>
         </div>
       ) : (
@@ -171,40 +163,42 @@ export function SavedJobsClient({ initialSavedJobs }: SavedJobsClientProps) {
             return (
               <div
                 key={sj.id}
-                className={`p-4 rounded-2xl bg-bg-surface border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
-                  isChecked ? 'border-accent-500/40 bg-accent-500/5' : 'border-border-subtle hover:border-border-default'
+                className={`p-4 rounded-2xl bg-bg-surface border shadow-2xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                  isChecked ? 'border-accent-400 bg-accent-50/40' : 'border-border-subtle hover:border-blue-300'
                 }`}
               >
                 <div className="flex items-start space-x-3 min-w-0">
                   <button
                     onClick={() => toggleSelect(sj.job_id)}
-                    className="mt-1 text-text-tertiary hover:text-accent-400"
+                    className="mt-1 text-text-tertiary hover:text-accent-600"
+                    aria-label="Select job"
                   >
                     {isChecked ? <CheckSquare className="w-4 h-4 text-accent-500" /> : <Square className="w-4 h-4" />}
                   </button>
 
                   <div className="min-w-0 flex-1 cursor-pointer" onClick={() => setSelectedJob(sj)}>
                     <div className="flex items-center space-x-2">
-                      <span className="text-[10px] font-mono font-bold text-accent-400 bg-accent-500/10 px-2 py-0.5 rounded uppercase">
+                      <span className="text-[10px] font-mono font-bold text-accent-600 bg-accent-50 border border-accent-100 px-2 py-0.5 rounded uppercase">
                         {job.source_name || 'verified'}
                       </span>
-                      <span className="text-[10px] text-text-tertiary">
-                        Saved {new Date(sj.saved_at).toLocaleDateString()}
+                      <span className="text-[11px] text-text-tertiary">
+                        Saved {new Date(sj.saved_at).toLocaleDateString('en-IN')}
                       </span>
                     </div>
-                    <h3 className="text-sm font-semibold text-text-primary hover:text-accent-400 transition-colors mt-1 truncate">
+                    <h2 className="text-sm font-bold text-text-primary hover:text-accent-600 transition-colors mt-1 truncate">
                       {job.title}
-                    </h3>
+                    </h2>
                     <p className="text-xs text-text-secondary truncate mt-0.5">{job.company}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3 shrink-0">
+                <div className="flex items-center space-x-2.5 shrink-0">
                   <select
+                    aria-label="Move job to stage"
                     value={sj.folder}
                     disabled={isUpdating === sj.job_id}
                     onChange={(e) => handleUpdateFolder(sj.job_id, e.target.value)}
-                    className="bg-bg-elevated border border-border-subtle rounded-xl py-1.5 px-3 text-xs text-text-secondary focus:outline-none"
+                    className="bg-bg-elevated border border-border-subtle rounded-xl py-1.5 px-3 text-xs font-medium text-text-primary focus:outline-none focus:border-accent-500"
                   >
                     <option value="shortlisted">Stage: Shortlist</option>
                     <option value="applied">Stage: Applied</option>
@@ -215,7 +209,8 @@ export function SavedJobsClient({ initialSavedJobs }: SavedJobsClientProps) {
 
                   <button
                     onClick={() => handleRemove(sj.job_id)}
-                    className="p-2 rounded-xl text-text-tertiary hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                    className="p-2 rounded-xl text-text-tertiary hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                    aria-label="Remove saved job"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -231,13 +226,14 @@ export function SavedJobsClient({ initialSavedJobs }: SavedJobsClientProps) {
         <motion.div
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 bg-bg-elevated border border-accent-500/40 rounded-2xl px-5 py-3 shadow-2xl flex items-center space-x-4"
+          className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white border border-accent-200 rounded-2xl px-5 py-3 shadow-xl flex items-center space-x-4"
         >
-          <span className="text-xs font-bold text-accent-400">{selectedIds.length} Selected</span>
+          <span className="text-xs font-bold text-accent-600">{selectedIds.length} Selected</span>
           <div className="h-4 w-[1px] bg-border-subtle" />
           <select
+            aria-label="Bulk move selected jobs"
             onChange={(e) => handleBulkMove(e.target.value)}
-            className="bg-bg-surface border border-border-subtle rounded-xl px-3 py-1.5 text-xs text-text-primary focus:outline-none"
+            className="bg-bg-elevated border border-border-subtle rounded-xl px-3 py-1.5 text-xs text-text-primary focus:outline-none"
           >
             <option value="">Move selected to...</option>
             <option value="shortlisted">Shortlist</option>
@@ -247,7 +243,7 @@ export function SavedJobsClient({ initialSavedJobs }: SavedJobsClientProps) {
           </select>
           <button
             onClick={() => setSelectedIds([])}
-            className="text-xs text-text-tertiary hover:text-text-primary"
+            className="text-xs font-medium text-text-secondary hover:text-text-primary"
           >
             Clear
           </button>
@@ -258,10 +254,10 @@ export function SavedJobsClient({ initialSavedJobs }: SavedJobsClientProps) {
       <Drawer isOpen={selectedJob !== null} onClose={() => setSelectedJob(null)}>
         {selectedJob && selectedJob.jobs && (
           <div className="p-6 text-text-primary space-y-4">
-            <h2 className="text-lg font-bold">{selectedJob.jobs.title}</h2>
-            <p className="text-xs text-text-secondary">{selectedJob.jobs.company}</p>
-            <div className="p-4 bg-bg-surface rounded-xl border border-border-subtle text-xs leading-relaxed max-h-60 overflow-y-auto">
-              {selectedJob.jobs.description || 'No description.'}
+            <h2 className="text-lg font-display font-bold">{selectedJob.jobs.title}</h2>
+            <p className="text-xs font-medium text-text-secondary">{selectedJob.jobs.company}</p>
+            <div className="p-4 bg-white rounded-xl border border-border-subtle text-xs text-text-secondary leading-relaxed max-h-72 overflow-y-auto whitespace-pre-line">
+              {selectedJob.jobs.description || 'No description available.'}
             </div>
           </div>
         )}

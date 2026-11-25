@@ -1,6 +1,5 @@
 'use client';
 import React, { useState } from 'react';
-import Image from 'next/image';
 
 interface CompanyLogoProps {
   domain?: string | null;
@@ -8,7 +7,7 @@ interface CompanyLogoProps {
   size?: number;
 }
 
-export function CompanyLogo({ domain, name, size = 36 }: CompanyLogoProps) {
+export function CompanyLogo({ domain, name, size = 40 }: CompanyLogoProps) {
   const [error, setError] = useState(false);
   const initial = name ? name.charAt(0).toUpperCase() : 'C';
 
@@ -16,7 +15,7 @@ export function CompanyLogo({ domain, name, size = 36 }: CompanyLogoProps) {
     return (
       <div
         style={{ width: size, height: size }}
-        className="rounded-xl bg-bg-elevated border border-border-subtle flex items-center justify-center font-bold text-accent-400 text-xs shrink-0 font-mono shadow-sm"
+        className="rounded-xl bg-accent-50 border border-accent-100 flex items-center justify-center font-display font-bold text-accent-600 text-sm shrink-0"
       >
         {initial}
       </div>
@@ -28,7 +27,7 @@ export function CompanyLogo({ domain, name, size = 36 }: CompanyLogoProps) {
       <img
         src={`https://logo.clearbit.com/${domain}`}
         alt={`${name} logo`}
-        className="w-full h-full rounded-xl object-contain bg-bg-elevated border border-border-subtle p-0.5"
+        className="w-full h-full rounded-xl object-contain bg-white border border-border-subtle p-1"
         onError={() => setError(true)}
       />
     </div>

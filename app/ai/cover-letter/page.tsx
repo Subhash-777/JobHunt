@@ -31,7 +31,7 @@ export default async function CoverLetterPage() {
     .eq('user_id', user.id);
 
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-gray-400">Loading cover letter generator...</div>}>
+    <Suspense fallback={<div className="min-h-[60vh] flex items-center justify-center text-sm text-text-secondary">Loading cover letter generator...</div>}>
       <CoverLetterClient 
         savedJobs={savedJobs || []} 
         versions={versions || []} 

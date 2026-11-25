@@ -195,7 +195,7 @@ export function ProfileForm({ profile, user, calendarLink }: ProfileFormProps) {
             <h1 className="text-xl font-bold text-text-primary">{formData.full_name || 'Candidate Profile'}</h1>
             <p className="text-xs text-text-secondary mt-0.5">{user.email}</p>
             <div className="flex items-center space-x-2 mt-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-accent-500/10 text-accent-400 border border-accent-500/20">
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-accent-500/10 text-accent-600 border border-accent-500/20">
                 Student Candidate
               </span>
               <span className="text-xs text-text-tertiary">· India Tier</span>
@@ -207,7 +207,7 @@ export function ProfileForm({ profile, user, calendarLink }: ProfileFormProps) {
         <div className="w-full md:w-64 space-y-2 bg-bg-elevated p-4 rounded-xl border border-border-subtle">
           <div className="flex items-center justify-between text-xs">
             <span className="font-semibold text-text-secondary">Profile Completeness</span>
-            <span className="font-mono font-bold text-accent-400">{completenessScore}%</span>
+            <span className="font-mono font-bold text-accent-600">{completenessScore}%</span>
           </div>
           <div className="w-full h-2 bg-bg-surface rounded-full overflow-hidden border border-border-subtle">
             <div
@@ -221,7 +221,7 @@ export function ProfileForm({ profile, user, calendarLink }: ProfileFormProps) {
       {/* Prominent Autofill Banner */}
       <div className="p-5 rounded-2xl bg-gradient-to-r from-accent-500/10 to-accent-600/5 border border-accent-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-start space-x-3">
-          <div className="p-2.5 rounded-xl bg-accent-500/20 text-accent-400 shrink-0">
+          <div className="p-2.5 rounded-xl bg-accent-500/20 text-accent-600 shrink-0">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
@@ -454,9 +454,9 @@ export function ProfileForm({ profile, user, calendarLink }: ProfileFormProps) {
             <label className="block text-xs font-medium text-text-secondary">Core Technical Skills</label>
             <div className="flex flex-wrap gap-2 p-2.5 bg-bg-elevated border border-border-subtle rounded-xl min-h-[44px]">
               {skills.map((s, idx) => (
-                <span key={idx} className="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-accent-500/10 text-accent-400 border border-accent-500/30 text-xs font-medium">
+                <span key={idx} className="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-accent-500/10 text-accent-600 border border-accent-500/30 text-xs font-medium">
                   <span>{s}</span>
-                  <button type="button" onClick={() => removeTag(idx, skills, setSkills)} className="hover:text-white">
+                  <button type="button" onClick={() => removeTag(idx, skills, setSkills)} className="hover:text-accent-700">
                     <X className="w-3 h-3" />
                   </button>
                 </span>
@@ -485,7 +485,7 @@ export function ProfileForm({ profile, user, calendarLink }: ProfileFormProps) {
               {courses.map((c, idx) => (
                 <span key={idx} className="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-bg-surface text-text-secondary border border-border-subtle text-xs font-medium">
                   <span>{c}</span>
-                  <button type="button" onClick={() => removeTag(idx, courses, setCourses)} className="hover:text-white">
+                  <button type="button" onClick={() => removeTag(idx, courses, setCourses)} className="hover:text-accent-700">
                     <X className="w-3 h-3" />
                   </button>
                 </span>
@@ -531,7 +531,7 @@ export function ProfileForm({ profile, user, calendarLink }: ProfileFormProps) {
             {profile.github_projects.map((repo: any, idx: number) => (
               <div key={idx} className="p-3.5 bg-bg-elevated border border-border-subtle rounded-xl space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-accent-400 truncate">{repo.name}</span>
+                  <span className="text-xs font-bold text-accent-600 truncate">{repo.name}</span>
                   <span className="text-[10px] text-text-tertiary font-mono">⭐ {repo.stargazers_count || 0}</span>
                 </div>
                 <p className="text-[11px] text-text-secondary line-clamp-2">
@@ -560,7 +560,7 @@ export function ProfileForm({ profile, user, calendarLink }: ProfileFormProps) {
               Subscribe to your personalised job watchlist in any RSS reader (Feedly, Inoreader, etc.).
             </p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 text-[11px] font-mono text-accent-400 bg-bg-surface px-3 py-2 rounded-lg border border-border-subtle truncate">
+              <code className="flex-1 text-[11px] font-mono text-accent-600 bg-bg-surface px-3 py-2 rounded-lg border border-border-subtle truncate">
                 {`${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://subhash-jobhunt.vercel.app'}/api/feed/${profile.rss_feed_token}.xml`}
               </code>
               <button
@@ -571,7 +571,7 @@ export function ProfileForm({ profile, user, calendarLink }: ProfileFormProps) {
                   );
                   toast.success('RSS URL copied!');
                 }}
-                className="px-3 py-2 bg-accent-500/10 hover:bg-accent-500/20 text-accent-400 border border-accent-500/20 rounded-lg text-xs font-semibold transition-colors"
+                className="px-3 py-2 bg-accent-500/10 hover:bg-accent-500/20 text-accent-600 border border-accent-500/20 rounded-lg text-xs font-semibold transition-colors"
               >
                 Copy
               </button>
@@ -589,7 +589,7 @@ export function ProfileForm({ profile, user, calendarLink }: ProfileFormProps) {
         {calendar ? (
           <div className="flex items-center justify-between p-4 bg-bg-elevated rounded-xl border border-border-subtle">
             <div>
-              <p className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+              <p className="text-xs font-bold text-emerald-700 flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4" /> Google Calendar Synced
               </p>
               <p className="text-xs text-text-secondary mt-0.5">{calendar.google_email}</p>
@@ -605,7 +605,7 @@ export function ProfileForm({ profile, user, calendarLink }: ProfileFormProps) {
                 toast.success('Calendar disconnected.');
                 router.refresh();
               }}
-              className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl text-xs font-semibold transition-colors"
+              className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl text-xs font-semibold transition-colors"
             >
               Disconnect
             </button>

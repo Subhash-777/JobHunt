@@ -15,15 +15,16 @@ export function Drawer({ isOpen, onClose, children }: DrawerProps) {
       {isOpen && (
         <>
           <motion.div
-            className="fixed inset-0 z-40 bg-black/60"
+            className="fixed inset-0 z-40 bg-slate-900/35"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.18 }}
             onClick={onClose}
           />
+          {/* Glass Surface #2: Job Detail Slide-Over Drawer */}
           <motion.div
-            className="fixed top-0 right-0 h-full w-full max-w-md z-50 glass-overlay shadow-2xl overflow-y-auto"
+            className="fixed top-0 right-0 h-full w-full max-w-lg z-50 glass-overlay shadow-2xl overflow-y-auto"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}

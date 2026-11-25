@@ -1,14 +1,28 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Drawer } from '../shared/Drawer';
 import { createClient } from '@/lib/supabase/client';
-import { 
-  Building2, MapPin, Briefcase, Calendar, CheckCircle2, 
-  XCircle, AlertTriangle, ExternalLink, Bookmark, Trash2,
-  Clock, ShieldAlert, Sparkles, GraduationCap, Users, Flame, Copy, Check
+import {
+  MapPin,
+  Briefcase,
+  ExternalLink,
+  Bookmark,
+  Trash2,
+  Clock,
+  Sparkles,
+  Flame,
+  Copy,
+  Check,
+  X,
+  Map,
+  Mic,
+  GraduationCap
 } from 'lucide-react';
 import { CalendarQuickAdd } from '../shared/CalendarQuickAdd';
+import { CompanyLogo } from './CompanyLogo';
+import { formatCompensation } from './JobCard';
 import { toast } from 'sonner';
 
 interface JobDetailDrawerProps {
@@ -22,7 +36,6 @@ export function JobDetailDrawer({ isOpen, onClose, job }: JobDetailDrawerProps) 
   const [savedState, setSavedState] = useState<{ folder: string; saved: boolean } | null>(null);
   const [loading, setLoading] = useState(false);
   const [fitScore, setFitScore] = useState<any>(null);
-  const [fitLoading, setFitLoading] = useState(false);
   const [tailoringResume, setTailoringResume] = useState(false);
   const [tailoredResume, setTailoredResume] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -50,6 +63,7 @@ export function JobDetailDrawer({ isOpen, onClose, job }: JobDetailDrawerProps) 
 
   useEffect(() => {
     if (!isOpen || !job) return;
+    setTailoredResume(null);
 
     async function loadData() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -75,7 +89,6 @@ export function JobDetailDrawer({ isOpen, onClose, job }: JobDetailDrawerProps) 
         setSavedState({ folder: 'shortlisted', saved: false });
       }
 
-      setFitLoading(true);
       try {
         const res = await fetch(`/api/jobs/${job.id}/fit`);
         if (res.ok) {
@@ -84,8 +97,6 @@ export function JobDetailDrawer({ isOpen, onClose, job }: JobDetailDrawerProps) 
         }
       } catch (err) {
         console.error('Error fetching fit score:', err);
-      } finally {
-        setFitLoading(false);
       }
 
       if (job.company) {
@@ -97,19 +108,19 @@ export function JobDetailDrawer({ isOpen, onClose, job }: JobDetailDrawerProps) 
               setPpoData(ppoJson.company);
             }
           }
-        } catch (err) {
+        } catch {
           // silent fallback
         }
       }
     }
 
     loadData();
-  }, [isOpen, job]);
+  }, [isOpen, job, supabase]);
 
   if (!job) return null;
 
-  const currentFit = fitScore?.score ?? job.fitScore ?? 65;
-  const isHiddenGem = currentFit >= 80;
+  const currentFit = fitScore?.score ?? job.fitScore ?? null;
+  const isHiddenGem = currentFit !== null && currentFit >= 80;
   const userSkillsSet = new Set((profile?.skills || []).map((s: string) => s.toLowerCase()));
 
   const handleSaveToggle = async () => {
@@ -139,7 +150,7 @@ export function JobDetailDrawer({ isOpen, onClose, job }: JobDetailDrawerProps) 
           toast.success('Job saved to Shortlisted!');
         }
       }
-    } catch (err) {
+    } catch {
       toast.error('Error updating saved state.');
     } finally {
       setLoading(false);
@@ -158,85 +169,121 @@ export function JobDetailDrawer({ isOpen, onClose, job }: JobDetailDrawerProps) 
         setSavedState(prev => prev ? { ...prev, folder: newFolder, saved: true } : null);
         toast.success(`Moved to ${newFolder.toUpperCase()}`);
       }
-    } catch (err) {
+    } catch {
       toast.error('Failed to change stage.');
     }
   };
 
   return (
     <Drawer isOpen={isOpen} onClose={onClose}>
-      <div className="p-6 h-full flex flex-col justify-between overflow-y-auto">
-        <div className="space-y-6">
+      <div className="p-5 sm:p-6 min-h-full flex flex-col justify-between bg-white/60">
+        <div className="space-y-5">
           {/* Header */}
           <header className="border-b border-border-subtle pb-5">
             <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-[10px] font-bold text-accent-400 bg-accent-500/10 border border-accent-500/20 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                {job.source_name || 'verified'}
-              </span>
-              <span className="text-xs text-text-tertiary flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5" />
-                {job.posted_at ? new Date(job.posted_at).toLocaleDateString() : 'Just now'}
-              </span>
-            </div>
-            <h2 className="text-xl font-bold text-text-primary leading-tight">{job.title}</h2>
-            <div className="flex items-center gap-2 mt-1">
-              <p className="text-sm font-medium text-text-secondary">{job.company}</p>
-              {ppoData && (
-                <a
-                  href={`/community/ppo?company=${encodeURIComponent(job.company)}`}
-                  className="inline-flex items-center gap-1 text-[11px] font-bold bg-saffron-500/10 text-saffron-400 border border-saffron-500/30 px-2 py-0.5 rounded-full hover:bg-saffron-500/20 transition-all"
-                >
-                  🎓 PPO: ~{ppoData.ppo_rate}% ({ppoData.ppo_reports} {ppoData.ppo_reports === 1 ? 'report' : 'reports'})
-                </a>
-              )}
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold text-accent-600 bg-accent-50 border border-accent-100 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                  {job.source_name || 'verified'}
+                </span>
+                <span className="text-xs text-text-tertiary flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5" />
+                  {job.posted_at ? new Date(job.posted_at).toLocaleDateString('en-IN') : 'Recently posted'}
+                </span>
+              </div>
+              <button
+                onClick={onClose}
+                className="p-1.5 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-bg-elevated transition-colors"
+                aria-label="Close job details"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            <div className="flex flex-wrap gap-2 text-xs mt-3">
+            <div className="flex items-start gap-3.5">
+              <CompanyLogo domain={job.company_domain} name={job.company} size={48} />
+              <div className="min-w-0 flex-1">
+                <h2 className="text-xl font-display font-bold text-text-primary leading-tight">{job.title}</h2>
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                  <p className="text-sm font-semibold text-text-secondary">{job.company}</p>
+                  {ppoData && (
+                    <Link
+                      href={`/community/ppo?company=${encodeURIComponent(job.company)}`}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full hover:bg-amber-100 transition-all"
+                    >
+                      <GraduationCap className="w-3 h-3" />
+                      PPO: ~{ppoData.ppo_rate}% ({ppoData.ppo_reports})
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2 text-xs mt-4">
               {(job.location || job.location_raw) && (
-                <span className="flex items-center gap-1 bg-bg-elevated border border-border-subtle px-2.5 py-1 rounded-lg text-text-secondary">
+                <span className="flex items-center gap-1 bg-bg-elevated border border-border-subtle px-2.5 py-1 rounded-lg text-text-secondary font-medium">
                   <MapPin className="w-3.5 h-3.5 text-text-tertiary" />
-                  {Array.isArray(job.location) ? job.location.join(', ') : job.location_raw}
+                  {Array.isArray(job.location) && job.location.length > 0 ? job.location.join(', ') : (job.location_raw || 'India')}
                 </span>
               )}
               {job.work_mode && (
-                <span className="flex items-center gap-1 bg-bg-elevated border border-border-subtle px-2.5 py-1 rounded-lg text-text-secondary capitalize">
+                <span className="flex items-center gap-1 bg-bg-elevated border border-border-subtle px-2.5 py-1 rounded-lg text-text-secondary capitalize font-medium">
                   <Briefcase className="w-3.5 h-3.5 text-text-tertiary" />
                   {job.work_mode}
                 </span>
               )}
-              <span className="bg-accent-500/10 border border-accent-500/20 text-accent-400 px-2.5 py-1 rounded-lg font-semibold">
-                💰 {job.ctc_text || job.salary_raw || 'Competitive Package'}
+              <span className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-2.5 py-1 rounded-lg font-semibold">
+                {formatCompensation(job)}
               </span>
+            </div>
+
+            {/* Quick Prep Links */}
+            <div className="grid grid-cols-2 gap-2 mt-4">
+              <Link
+                href={`/jobs/${job.id}/roadmap`}
+                className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white border border-border-subtle hover:border-accent-200 hover:bg-accent-50 text-xs font-semibold text-text-primary transition-colors"
+              >
+                <Map className="w-3.5 h-3.5 text-accent-500" />
+                <span>Skill Roadmap</span>
+              </Link>
+              <Link
+                href={`/jobs/${job.id}/interview`}
+                className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white border border-border-subtle hover:border-accent-200 hover:bg-accent-50 text-xs font-semibold text-text-primary transition-colors"
+              >
+                <Mic className="w-3.5 h-3.5 text-accent-500" />
+                <span>Mock Interview</span>
+              </Link>
             </div>
           </header>
 
-          {/* Hidden Gem Banner (if score >= 80) */}
+          {/* Hidden Gem Banner */}
           {isHiddenGem && (
-            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-accent-500/20 to-accent-600/10 border border-accent-500/30 flex items-center space-x-3">
-              <div className="p-2 rounded-xl bg-accent-500/20 text-accent-400">
-                <Flame className="w-5 h-5 fill-accent-500" />
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-accent-50 to-indigo-50 border border-accent-100 flex items-center space-x-3">
+              <div className="p-2 rounded-xl bg-white text-accent-500 border border-accent-100 shadow-2xs">
+                <Flame className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-text-primary">Why this is a Hidden Gem</h4>
-                <p className="text-[11px] text-text-secondary">High match score ({currentFit}%) with low applicant competition!</p>
+                <h3 className="text-xs font-bold text-text-primary">Strong Profile Match</h3>
+                <p className="text-[11px] text-text-secondary">
+                  {currentFit}% alignment with your skills and eligibility!
+                </p>
               </div>
             </div>
           )}
 
-          {/* Skills Breakdown (Highlighted matching skills) */}
-          <section className="bg-bg-surface border border-border-subtle rounded-2xl p-4 space-y-2">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-text-secondary flex items-center gap-1.5">
+          {/* Skills Breakdown */}
+          <section className="bg-white border border-border-subtle rounded-2xl p-4 space-y-2.5 shadow-2xs">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-text-tertiary">
               Required Tech Stack
             </h3>
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              {(job.key_skills || ['React', 'TypeScript', 'Node.js']).map((skill: string, idx: number) => {
+            <div className="flex flex-wrap gap-1.5">
+              {(job.key_skills && job.key_skills.length > 0 ? job.key_skills : ['Software Engineering', 'Problem Solving', 'Git']).map((skill: string, idx: number) => {
                 const isMatch = userSkillsSet.has(skill.toLowerCase());
                 return (
                   <span
                     key={idx}
-                    className={`text-[11px] font-medium uppercase tracking-wider px-2.5 py-1 rounded-lg border transition-colors ${
+                    className={`text-[11px] font-medium px-2.5 py-1 rounded-lg border transition-colors ${
                       isMatch
-                        ? 'bg-accent-500/20 text-accent-400 border-accent-500/40 font-semibold'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 font-semibold'
                         : 'bg-bg-elevated text-text-secondary border-border-subtle'
                     }`}
                   >
@@ -248,36 +295,38 @@ export function JobDetailDrawer({ isOpen, onClose, job }: JobDetailDrawerProps) 
           </section>
 
           {/* AI Fit Analysis */}
-          <section className="bg-bg-surface border border-border-subtle rounded-2xl p-4 space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-text-secondary flex items-center gap-1.5">
+          <section className="bg-white border border-border-subtle rounded-2xl p-4 space-y-3 shadow-2xs">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-text-tertiary flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-accent-500" />
               AI Candidate Alignment
             </h3>
-            
+
             <div className="flex items-center space-x-4">
-              <div className="text-3xl font-extrabold text-accent-400 bg-accent-500/10 px-3.5 py-1.5 rounded-xl border border-accent-500/30">
-                {currentFit}%
+              <div className="text-2xl font-display font-extrabold text-emerald-700 bg-emerald-50 px-3.5 py-2 rounded-xl border border-emerald-200">
+                {currentFit !== null ? `${currentFit}%` : '—'}
               </div>
-              <p className="text-xs text-text-tertiary">
-                Multi-vector alignment score computed across your profile skills, experience, and projects.
+              <p className="text-xs text-text-secondary">
+                {currentFit !== null
+                  ? 'Multi-vector alignment score computed across your profile skills, experience, and eligibility.'
+                  : 'Complete your skills & CGPA on your Profile page to compute a personalised fit score.'}
               </p>
             </div>
           </section>
 
           {/* Description */}
           <section className="space-y-2">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-text-secondary">Job Description</h3>
-            <div className="text-xs text-text-secondary leading-relaxed bg-bg-surface p-4 rounded-2xl border border-border-subtle whitespace-pre-line max-h-60 overflow-y-auto">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-text-tertiary">About the Role</h3>
+            <div className="text-xs text-text-secondary leading-relaxed bg-white p-4 rounded-2xl border border-border-subtle whitespace-pre-line max-h-60 overflow-y-auto shadow-2xs">
               {job.description || 'No detailed description available.'}
             </div>
           </section>
 
           {/* Tailored Resume Output */}
           {tailoredResume && (
-            <section className="p-4 rounded-2xl bg-bg-surface border border-accent-500/30 space-y-3">
+            <section className="p-4 rounded-2xl bg-accent-50/50 border border-accent-200 space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold text-accent-400 flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4" /> Customized Tailored Resume
+                <h4 className="text-xs font-bold text-accent-600 flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4" /> Tailored Resume Draft
                 </h4>
                 <button
                   onClick={() => {
@@ -286,13 +335,13 @@ export function JobDetailDrawer({ isOpen, onClose, job }: JobDetailDrawerProps) 
                     toast.success('Copied tailored resume!');
                     setTimeout(() => setCopied(false), 2000);
                   }}
-                  className="flex items-center space-x-1 text-xs text-text-secondary hover:text-white px-2 py-1 rounded bg-bg-elevated"
+                  className="flex items-center space-x-1 text-xs text-text-secondary hover:text-text-primary px-2.5 py-1 rounded-lg bg-white border border-border-subtle"
                 >
-                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                   <span>{copied ? 'Copied' : 'Copy'}</span>
                 </button>
               </div>
-              <div className="p-3 bg-bg-elevated rounded-xl text-[11px] font-mono text-text-secondary max-h-48 overflow-y-auto whitespace-pre-wrap">
+              <div className="p-3 bg-white border border-border-subtle rounded-xl text-[11px] font-mono text-text-secondary max-h-48 overflow-y-auto whitespace-pre-wrap">
                 {tailoredResume}
               </div>
             </section>
@@ -300,14 +349,15 @@ export function JobDetailDrawer({ isOpen, onClose, job }: JobDetailDrawerProps) 
         </div>
 
         {/* Footer Actions */}
-        <div className="border-t border-border-subtle pt-4 mt-6 space-y-3 bg-bg-surface/90 sticky bottom-0">
+        <div className="border-t border-border-subtle pt-4 mt-6 space-y-3 bg-white/95 sticky bottom-0">
           <div className="flex items-center justify-between gap-2">
             {savedState?.saved ? (
               <div className="flex-1 flex items-center space-x-2">
                 <select
+                  aria-label="Application pipeline stage"
                   value={savedState.folder}
                   onChange={(e) => handleStageChange(e.target.value)}
-                  className="flex-1 bg-bg-elevated border border-border-subtle rounded-xl py-2 px-3 text-xs text-text-secondary focus:outline-none"
+                  className="flex-1 bg-bg-elevated border border-border-subtle rounded-xl py-2 px-3 text-xs font-medium text-text-primary focus:outline-none focus:border-accent-500"
                 >
                   <option value="shortlisted">Stage: Shortlisted</option>
                   <option value="applied">Stage: Applied</option>
@@ -317,7 +367,8 @@ export function JobDetailDrawer({ isOpen, onClose, job }: JobDetailDrawerProps) 
                 </select>
                 <button
                   onClick={handleSaveToggle}
-                  className="p-2 rounded-xl border border-red-500/20 text-red-400 hover:bg-red-500/10"
+                  className="p-2 rounded-xl border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors"
+                  aria-label="Remove saved job"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -326,21 +377,21 @@ export function JobDetailDrawer({ isOpen, onClose, job }: JobDetailDrawerProps) 
               <button
                 onClick={handleSaveToggle}
                 disabled={loading}
-                className="flex-1 py-2.5 rounded-xl border border-border-default hover:border-accent-500/40 text-xs font-semibold text-text-primary hover:text-accent-400 flex items-center justify-center space-x-2 transition-all"
+                className="flex-1 py-2.5 rounded-xl border border-border-default bg-white hover:bg-bg-elevated hover:border-accent-400 text-xs font-semibold text-text-primary flex items-center justify-center space-x-2 transition-all"
               >
-                <Bookmark className="w-4 h-4" />
-                <span>Bookmark Role</span>
+                <Bookmark className="w-4 h-4 text-text-secondary" />
+                <span>Save Job</span>
               </button>
             )}
 
             <CalendarQuickAdd job={job} />
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2.5">
             <button
               onClick={handleTailorResume}
               disabled={tailoringResume}
-              className="flex-1 py-2.5 rounded-xl bg-accent-500/10 hover:bg-accent-500/20 text-accent-400 border border-accent-500/30 text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all"
+              className="flex-1 py-2.5 rounded-xl bg-accent-50 hover:bg-accent-100 text-accent-600 border border-accent-200 text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all"
             >
               <Sparkles className="w-4 h-4" />
               <span>{tailoringResume ? 'Tailoring...' : 'AI Tailor Resume'}</span>
@@ -350,7 +401,7 @@ export function JobDetailDrawer({ isOpen, onClose, job }: JobDetailDrawerProps) 
               href={job.apply_url || job.source_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-accent-600 to-accent-500 hover:from-accent-500 hover:to-accent-400 text-white text-xs font-bold text-center flex items-center justify-center space-x-1.5 shadow-md shadow-accent-500/20 transition-all"
+              className="flex-1 py-2.5 rounded-xl bg-accent-500 hover:bg-accent-600 text-white text-xs font-bold text-center flex items-center justify-center space-x-1.5 shadow-sm shadow-accent-500/20 transition-all"
             >
               <span>Apply Now</span>
               <ExternalLink className="w-3.5 h-3.5" />

@@ -1,14 +1,22 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { FitScoreRing } from './FitScoreRing';
 import { CompanyLogo } from './CompanyLogo';
 import { DeadlineCountdown } from './DeadlineCountdown';
 import { SourceBadge } from './SourceBadge';
 import { evaluateEligibility } from '@/lib/intelligence/eligibility';
 import { CalendarQuickAdd } from '../shared/CalendarQuickAdd';
-import { MapPin, Bookmark, ExternalLink, Flame, CheckCircle2, AlertTriangle, XCircle, Users } from 'lucide-react';
+import {
+  MapPin,
+  Bookmark,
+  ExternalLink,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  Briefcase,
+  Sparkles
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 export interface JobCardProps {
@@ -22,9 +30,9 @@ export interface JobCardProps {
 export function formatCompensation(job: any): string {
   if (job.ctc_max) return `₹${job.ctc_min ?? 0}–${job.ctc_max} LPA`;
   if (job.stipend_max) return `₹${(job.stipend_min ?? 0).toLocaleString('en-IN')}–${job.stipend_max.toLocaleString('en-IN')}/mo`;
-  if (job.ctc_bucket && job.ctc_bucket !== 'unknown') return `CTC: ${job.ctc_bucket} LPA`;
+  if (job.ctc_bucket && job.ctc_bucket !== 'unknown') return `${job.ctc_bucket} LPA`;
   if (job.ctc_text || job.salary_raw) return job.ctc_text || job.salary_raw;
-  return '₹8.5L - ₹14L PA (Estimated)';
+  return 'Competitive CTC';
 }
 
 export function JobCard({ job, userProfile, onClick, onSaveToggle, isSaved: initialSaved = false }: JobCardProps) {
@@ -48,7 +56,6 @@ export function JobCard({ job, userProfile, onClick, onSaveToggle, isSaved: init
 
   const handleApply = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Log apply click in background
     fetch(`/api/jobs/${job.id}/click`, { method: 'POST' }).catch(() => {});
     if (job.apply_url || job.source_url) {
       window.open(job.apply_url || job.source_url, '_blank', 'noopener,noreferrer');
@@ -58,107 +65,114 @@ export function JobCard({ job, userProfile, onClick, onSaveToggle, isSaved: init
   };
 
   return (
-    <motion.div
-      whileHover={{ y: -2 }}
-      transition={{ duration: 0.15 }}
+    <article
       onClick={onClick}
-      className="bg-bg-surface hover:bg-bg-elevated border border-border-subtle hover:border-border-default rounded-[14px] p-4 flex flex-col justify-between cursor-pointer group transition-all shadow-sm hover:shadow-accent-500/5 relative overflow-hidden"
+      className="job-card p-4 sm:p-5 flex flex-col justify-between cursor-pointer group relative"
     >
-      {/* ROW 1: [Company Logo 36px] [Title] [FitScoreRing] [🔥 Gem] */}
+      {/* Top Row: Logo + Title/Company + FitScore/Match + Bookmark */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start space-x-3 min-w-0">
-          <CompanyLogo domain={job.company_domain} name={job.company} size={36} />
+          <CompanyLogo domain={job.company_domain} name={job.company} size={42} />
           <div className="min-w-0">
-            <h3 className="text-sm font-semibold text-text-primary group-hover:text-accent-400 transition-colors line-clamp-1 tracking-tight">
-              {job.title}
-            </h3>
-            <p className="text-xs text-text-secondary truncate mt-0.5">
+            <div className="flex items-center gap-1.5">
+              <h2 className="text-[15px] font-display font-bold text-text-primary group-hover:text-accent-600 transition-colors line-clamp-2 leading-snug tracking-tight">
+                {job.title}
+              </h2>
+            </div>
+            <p className="text-xs font-medium text-text-secondary truncate mt-0.5">
               {job.company}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center space-x-2 shrink-0">
-          {isHiddenGem && (
-            <span className="p-1 rounded-full bg-accent-500/10 text-accent-400 border border-accent-500/20" title="Hidden Gem - High Match">
-              <Flame className="w-3.5 h-3.5 fill-accent-500/20" />
-            </span>
-          )}
+        <div className="flex items-center space-x-1.5 shrink-0">
           <FitScoreRing score={fitScore} />
           <button
             onClick={handleBookmark}
-            className={`p-1.5 rounded-lg transition-colors min-w-[32px] min-h-[32px] flex items-center justify-center ${
+            className={`p-2 rounded-xl border transition-colors flex items-center justify-center ${
               saved
-                ? 'text-accent-500 bg-accent-500/10 border border-accent-500/30'
-                : 'text-text-tertiary hover:text-text-primary hover:bg-bg-elevated'
+                ? 'text-accent-600 bg-accent-50 border-accent-200'
+                : 'text-text-tertiary border-transparent hover:text-text-primary hover:bg-bg-elevated'
             }`}
-            title={saved ? 'Remove bookmark' : 'Bookmark job'}
+            title={saved ? 'Remove bookmark' : 'Save job'}
+            aria-label={saved ? 'Remove bookmark' : 'Save job'}
           >
             <Bookmark className={`w-4 h-4 ${saved ? 'fill-accent-500' : ''}`} />
           </button>
         </div>
       </div>
 
-      {/* ROW 2: Location · Work Mode · Experience */}
-      <div className="flex flex-wrap items-center gap-2 text-[11px] text-text-secondary mt-3">
-        <span className="flex items-center space-x-1 bg-bg-elevated px-2 py-0.5 rounded-md border border-border-subtle">
-          <MapPin className="w-3 h-3 text-text-tertiary" />
-          <span className="truncate max-w-[120px]">
-            {Array.isArray(job.location) ? job.location.join(', ') : job.location_raw || 'India (Remote/Hybrid)'}
+      {/* Metadata Pills Row */}
+      <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-text-secondary mt-3.5">
+        <span className="inline-flex items-center space-x-1 bg-bg-elevated px-2.5 py-1 rounded-lg font-medium">
+          <MapPin className="w-3 h-3 text-text-tertiary shrink-0" />
+          <span className="truncate max-w-[140px]">
+            {Array.isArray(job.location) && job.location.length > 0
+              ? job.location.join(', ')
+              : job.location_raw || 'India (Remote/Hybrid)'}
           </span>
         </span>
-        {job.work_mode && (
-          <span className="capitalize px-2 py-0.5 rounded-md bg-bg-elevated border border-border-subtle">
+        {job.work_mode && job.work_mode.toLowerCase() !== 'unknown' && (
+          <span className="capitalize px-2.5 py-1 rounded-lg bg-bg-elevated font-medium">
             {job.work_mode}
           </span>
         )}
-        <span className="px-2 py-0.5 rounded-md bg-bg-elevated border border-border-subtle">
-          {job.experience_max != null ? `0-${job.experience_max} yrs` : 'Freshers / 0-2 yrs'}
+        <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-bg-elevated font-medium">
+          <Briefcase className="w-3 h-3 text-text-tertiary shrink-0" />
+          <span>{job.experience_max != null ? `0–${job.experience_max} yrs` : '0–2 yrs / Fresher'}</span>
         </span>
       </div>
 
-      {/* ROW 3: CTC / Stipend */}
-      {ctcDisplay && (
-        <div className="mt-2.5 text-xs font-medium text-emerald-400 flex items-center space-x-1.5">
-          <span className="text-[11px] text-text-tertiary font-mono">CTC:</span>
-          <span className="tracking-tight">{ctcDisplay}</span>
-        </div>
-      )}
+      {/* Compensation + Optional Match / Gem Strip */}
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+        <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+          {ctcDisplay}
+        </span>
 
-      {/* ROW 4: Skill Chips */}
-      <div className="flex flex-wrap gap-1.5 mt-3">
-        {(job.key_skills || ['React', 'TypeScript', 'Node.js', 'Python']).slice(0, 4).map((skill: string, idx: number) => (
-          <span
-            key={idx}
-            className="bg-bg-elevated border border-border-default text-text-secondary text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-[4px]"
-          >
-            {skill}
+        {isHiddenGem && (
+          <span className="inline-flex items-center space-x-1 text-[11px] font-semibold text-accent-600 bg-accent-50 border border-accent-100 px-2.5 py-0.5 rounded-full">
+            <Sparkles className="w-3 h-3" />
+            <span>{fitScore ? `${fitScore}% Match` : 'Top Pick'}</span>
           </span>
-        ))}
+        )}
       </div>
 
-      {/* ROW 5: Eligibility Badge + Source Badge */}
-      <div className="flex items-center justify-between mt-3.5 pt-2.5 border-t border-border-subtle text-[11px]">
+      {/* Skills Row */}
+      <div className="flex flex-wrap gap-1.5 mt-3">
+        {(job.key_skills && job.key_skills.length > 0 ? job.key_skills : ['Engineering', 'Software', 'Problem Solving'])
+          .slice(0, 4)
+          .map((skill: string, idx: number) => (
+            <span
+              key={idx}
+              className="bg-bg-elevated border border-border-subtle text-text-secondary text-[11px] font-medium px-2 py-0.5 rounded-md"
+            >
+              {skill}
+            </span>
+          ))}
+      </div>
+
+      {/* Eligibility & Source Footer */}
+      <div className="flex items-center justify-between mt-3.5 pt-3 border-t border-border-subtle text-[11px]">
         {eligibility.status === 'eligible' && (
-          <span className="flex items-center space-x-1 text-emerald-400 font-medium bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+          <span className="inline-flex items-center space-x-1 text-emerald-700 font-semibold bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
             <CheckCircle2 className="w-3 h-3" />
             <span>Eligible</span>
           </span>
         )}
         {eligibility.status === 'partial' && (
-          <span className="flex items-center space-x-1 text-amber-400 font-medium bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+          <span className="inline-flex items-center space-x-1 text-amber-700 font-semibold bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
             <AlertTriangle className="w-3 h-3" />
             <span>Partial Match</span>
           </span>
         )}
         {eligibility.status === 'high_bar' && (
-          <span className="flex items-center space-x-1 text-text-tertiary font-medium bg-bg-elevated border border-border-subtle px-2 py-0.5 rounded-full">
-            <XCircle className="w-3 h-3" />
+          <span className="inline-flex items-center space-x-1 text-text-secondary font-medium bg-bg-elevated border border-border-subtle px-2.5 py-0.5 rounded-full">
+            <XCircle className="w-3 h-3 text-text-tertiary" />
             <span>High Bar</span>
           </span>
         )}
         {eligibility.status === 'unknown' && (
-          <span className="flex items-center space-x-1 text-text-tertiary font-medium bg-bg-elevated border border-border-subtle px-2 py-0.5 rounded-full">
+          <span className="inline-flex items-center space-x-1 text-text-tertiary font-medium bg-bg-elevated border border-border-subtle px-2.5 py-0.5 rounded-full">
             <span>Verify Eligibility</span>
           </span>
         )}
@@ -166,7 +180,7 @@ export function JobCard({ job, userProfile, onClick, onSaveToggle, isSaved: init
         <SourceBadge source={job.source_name} />
       </div>
 
-      {/* ROW 6: Deadline + Calendar + Apply */}
+      {/* Bottom Action Row */}
       <div className="flex items-center justify-between mt-3 pt-2">
         <div className="flex items-center space-x-2">
           <CalendarQuickAdd job={job} />
@@ -175,12 +189,12 @@ export function JobCard({ job, userProfile, onClick, onSaveToggle, isSaved: init
 
         <button
           onClick={handleApply}
-          className="flex items-center space-x-1 text-xs font-semibold text-white bg-gradient-to-r from-accent-600 to-accent-500 hover:from-accent-500 hover:to-accent-400 px-3 py-1.5 rounded-xl transition-all shadow-sm shadow-accent-500/20 min-h-[36px]"
+          className="inline-flex items-center space-x-1.5 text-xs font-semibold text-white bg-accent-500 hover:bg-accent-600 px-3.5 py-2 rounded-xl transition-colors shadow-xs shadow-accent-500/20"
         >
-          <span>Apply</span>
-          <ExternalLink className="w-3 h-3" />
+          <span>Apply Now</span>
+          <ExternalLink className="w-3.5 h-3.5" />
         </button>
       </div>
-    </motion.div>
+    </article>
   );
 }

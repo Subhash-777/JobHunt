@@ -169,7 +169,7 @@ export default function AdminSourceHealthClient() {
       <div style={styles.accessDenied}>
         <div style={{ fontSize: 64, marginBottom: 16 }}>🔐</div>
         <h1 style={{ fontSize: 24, fontWeight: 700, color: '#ef4444' }}>Access Denied</h1>
-        <p style={{ color: '#9a9896', marginTop: 8 }}>This page is restricted to administrators only.</p>
+        <p style={{ color: '#64748B', marginTop: 8 }}>This page is restricted to administrators only.</p>
       </div>
     )
   }
@@ -178,7 +178,7 @@ export default function AdminSourceHealthClient() {
     return (
       <div style={styles.accessDenied}>
         <div style={{ fontSize: 48, marginBottom: 16 }}>⏳</div>
-        <p style={{ color: '#9a9896' }}>Loading admin dashboard…</p>
+        <p style={{ color: '#64748B' }}>Loading admin dashboard…</p>
       </div>
     )
   }
@@ -205,10 +205,10 @@ export default function AdminSourceHealthClient() {
       {/* KPI strip */}
       <div style={styles.kpiStrip}>
         {[
-          { label: 'Total Jobs',     value: totalJobs.toLocaleString(),  icon: '💼', color: '#FF6B35' },
-          { label: 'Active Jobs',    value: activeJobs.toLocaleString(), icon: '✅', color: '#22c55e' },
-          { label: 'Active Sources', value: sourceStats.length,          icon: '📡', color: '#3b82f6' },
-          { label: 'Recent Errors',  value: errorSources,                icon: '❌', color: errorSources > 0 ? '#ef4444' : '#22c55e' }
+          { label: 'Total Jobs',     value: totalJobs.toLocaleString(),  icon: '💼', color: '#2563EB' },
+          { label: 'Active Jobs',    value: activeJobs.toLocaleString(), icon: '✅', color: '#059669' },
+          { label: 'Active Sources', value: sourceStats.length,          icon: '📡', color: '#2563EB' },
+          { label: 'Recent Errors',  value: errorSources,                icon: '❌', color: errorSources > 0 ? '#DC2626' : '#059669' }
         ].map(kpi => (
           <div key={kpi.label} style={styles.kpiCard}>
             <div style={{ fontSize: 28 }}>{kpi.icon}</div>
@@ -255,7 +255,7 @@ export default function AdminSourceHealthClient() {
                     <td style={{ ...styles.td, textAlign: 'right', color: '#22c55e' }}>
                       {row.active_jobs.toLocaleString()}
                     </td>
-                    <td style={{ ...styles.td, color: '#9a9896', fontSize: 12 }}>
+                    <td style={{ ...styles.td, color: '#64748B', fontSize: 12 }}>
                       {lastRun
                         ? `${lastRun.toLocaleDateString('en-IN')} ${lastRun.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`
                         : '—'}
@@ -298,7 +298,7 @@ export default function AdminSourceHealthClient() {
                 <div style={styles.aiCardHeader}>
                   <div>
                     <div style={styles.aiProvider}>{provider.toUpperCase()}</div>
-                    <div style={{ fontSize: 11, color: '#9a9896', marginTop: 2 }}>
+                    <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>
                       {provider === 'groq' ? 'llama-3.3-70b-versatile'
                         : provider === 'openrouter' ? 'qwen/qwen3.8-27b:free'
                         : 'gemini-2.5-flash'}
@@ -308,7 +308,7 @@ export default function AdminSourceHealthClient() {
                     <div style={{ fontSize: 24, fontWeight: 700, color: barColor }}>
                       {pct}%
                     </div>
-                    <div style={{ fontSize: 10, color: '#9a9896' }}>of daily quota</div>
+                    <div style={{ fontSize: 10, color: '#64748B' }}>of daily quota</div>
                   </div>
                 </div>
 
@@ -325,15 +325,15 @@ export default function AdminSourceHealthClient() {
                 <div style={styles.aiStats}>
                   <div>
                     <div style={{ fontSize: 18, fontWeight: 700 }}>{todayCalls.toLocaleString()}</div>
-                    <div style={{ fontSize: 10, color: '#9a9896' }}>calls today</div>
+                    <div style={{ fontSize: 10, color: '#64748B' }}>calls today</div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: 18, fontWeight: 700 }}>{quota.toLocaleString()}</div>
-                    <div style={{ fontSize: 10, color: '#9a9896' }}>daily limit</div>
+                    <div style={{ fontSize: 10, color: '#64748B' }}>daily limit</div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: 18, fontWeight: 700 }}>{(usage?.calls_week ?? 0).toLocaleString()}</div>
-                    <div style={{ fontSize: 10, color: '#9a9896' }}>this week</div>
+                    <div style={{ fontSize: 10, color: '#64748B' }}>this week</div>
                   </div>
                 </div>
               </div>
@@ -366,12 +366,12 @@ export default function AdminSourceHealthClient() {
                     <td style={styles.td}>
                       {SOURCE_ICONS[log.source_name] ?? '📦'} {log.source_name}
                     </td>
-                    <td style={{ ...styles.td, fontSize: 11, color: '#9a9896' }}>
+                    <td style={{ ...styles.td, fontSize: 11, color: '#64748B' }}>
                       {new Date(log.run_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}
                     </td>
                     <td style={{ ...styles.td, textAlign: 'right' }}>{log.jobs_fetched}</td>
                     <td style={{ ...styles.td, textAlign: 'right', color: '#22c55e' }}>{log.jobs_inserted}</td>
-                    <td style={{ ...styles.td, textAlign: 'right', fontSize: 11, color: '#9a9896' }}>
+                    <td style={{ ...styles.td, textAlign: 'right', fontSize: 11, color: '#64748B' }}>
                       {log.duration_ms ? `${(log.duration_ms / 1000).toFixed(1)}s` : '—'}
                     </td>
                     <td style={styles.td}>
@@ -408,10 +408,8 @@ export default function AdminSourceHealthClient() {
 const styles: Record<string, React.CSSProperties> = {
   page: {
     minHeight: '100vh',
-    background: '#0a0a12',
-    color: '#e8e6e3',
-    fontFamily: "'Inter', sans-serif",
-    padding: '32px 24px',
+    color: '#0F172A',
+    padding: '8px 0 32px',
     maxWidth: 1200,
     margin: '0 auto'
   },
@@ -419,68 +417,75 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 32
+    marginBottom: 24
   },
-  h1: { fontSize: 28, fontWeight: 700, marginBottom: 4 },
-  h2: { fontSize: 18, fontWeight: 700, marginBottom: 16 },
-  subtitle: { fontSize: 13, color: '#9a9896' },
+  h1: { fontSize: 24, fontWeight: 800, marginBottom: 4, color: '#0F172A' },
+  h2: { fontSize: 16, fontWeight: 700, marginBottom: 14, color: '#0F172A' },
+  subtitle: { fontSize: 13, color: '#475569' },
   refreshBtn: {
-    padding: '8px 20px',
-    background: 'linear-gradient(135deg, #FF6B35, #FF8C42)',
-    color: '#fff',
+    padding: '8px 18px',
+    background: '#2563EB',
+    color: '#FFFFFF',
     border: 'none',
     borderRadius: 10,
     cursor: 'pointer',
-    fontFamily: "'Inter', sans-serif",
     fontSize: 13,
     fontWeight: 600
   },
   kpiStrip: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: 16,
-    marginBottom: 32
+    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+    gap: 14,
+    marginBottom: 28
   },
   kpiCard: {
-    background: 'rgba(255,255,255,0.04)',
-    border: '1px solid rgba(255,255,255,0.08)',
+    background: '#FFFFFF',
+    border: '1px solid #E2E8F0',
     borderRadius: 16,
-    padding: '20px',
-    textAlign: 'center'
+    padding: '18px',
+    textAlign: 'center',
+    boxShadow: '0 1px 2px rgba(15,23,42,0.04)'
   },
-  kpiValue: { fontSize: 28, fontWeight: 800, margin: '8px 0 4px' },
-  kpiLabel: { fontSize: 12, color: '#9a9896' },
-  section: { marginBottom: 40 },
-  tableWrap: { overflowX: 'auto', borderRadius: 12, border: '1px solid rgba(255,255,255,0.08)' },
+  kpiValue: { fontSize: 26, fontWeight: 800, margin: '6px 0 4px' },
+  kpiLabel: { fontSize: 12, color: '#64748B', fontWeight: 600 },
+  section: { marginBottom: 36 },
+  tableWrap: {
+    overflowX: 'auto',
+    borderRadius: 14,
+    border: '1px solid #E2E8F0',
+    background: '#FFFFFF',
+    boxShadow: '0 1px 2px rgba(15,23,42,0.04)'
+  },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
   th: {
     padding: '12px 16px',
     textAlign: 'left',
     fontSize: 11,
-    fontWeight: 600,
-    color: '#9a9896',
+    fontWeight: 700,
+    color: '#475569',
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
-    background: 'rgba(255,255,255,0.03)',
-    borderBottom: '1px solid rgba(255,255,255,0.08)'
+    background: '#F8FAFC',
+    borderBottom: '1px solid #E2E8F0'
   },
-  tr: { borderBottom: '1px solid rgba(255,255,255,0.05)' },
-  td: { padding: '12px 16px', verticalAlign: 'middle' },
-  aiGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 },
+  tr: { borderBottom: '1px solid #F1F5F9' },
+  td: { padding: '12px 16px', verticalAlign: 'middle', color: '#0F172A' },
+  aiGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 },
   aiCard: {
-    background: 'rgba(255,255,255,0.04)',
-    border: '1px solid rgba(255,255,255,0.08)',
+    background: '#FFFFFF',
+    border: '1px solid #E2E8F0',
     borderRadius: 16,
-    padding: 20
+    padding: 20,
+    boxShadow: '0 1px 2px rgba(15,23,42,0.04)'
   },
-  aiCardHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: 16 },
-  aiProvider: { fontSize: 14, fontWeight: 700 },
+  aiCardHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: 14 },
+  aiProvider: { fontSize: 14, fontWeight: 700, color: '#0F172A' },
   progressTrack: {
     height: 8,
-    background: 'rgba(255,255,255,0.08)',
+    background: '#F1F5F9',
     borderRadius: 4,
     overflow: 'hidden',
-    marginBottom: 16
+    marginBottom: 14
   },
   aiStats: { display: 'flex', justifyContent: 'space-between' },
   accessDenied: {
@@ -488,28 +493,28 @@ const styles: Record<string, React.CSSProperties> = {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: '100vh',
-    background: '#0a0a12',
-    color: '#e8e6e3',
-    fontFamily: "'Inter', sans-serif",
+    minHeight: '70vh',
+    color: '#0F172A',
     textAlign: 'center',
     padding: 40
   },
   emptyState: {
-    padding: 40,
+    padding: 36,
     textAlign: 'center',
-    color: '#9a9896',
-    border: '1px solid rgba(255,255,255,0.08)',
-    borderRadius: 12
+    color: '#475569',
+    background: '#FFFFFF',
+    border: '1px solid #E2E8F0',
+    borderRadius: 14
   },
   codeBlock: {
     display: 'inline-block',
     marginTop: 12,
     padding: '8px 16px',
-    background: 'rgba(255,255,255,0.05)',
+    background: '#EFF6FF',
+    border: '1px solid #DBEAFE',
     borderRadius: 8,
     fontFamily: 'monospace',
     fontSize: 13,
-    color: '#FF6B35'
+    color: '#1D4ED8'
   }
 }

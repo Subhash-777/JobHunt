@@ -5,9 +5,9 @@ import { Clock } from 'lucide-react';
 export function DeadlineCountdown({ deadline }: { deadline?: string | null }) {
   if (!deadline) {
     return (
-      <span className="text-[10px] text-text-tertiary flex items-center space-x-1 font-mono">
-        <Clock className="w-3 h-3 text-text-tertiary" />
-        <span>Closes in 7d</span>
+      <span className="text-[11px] text-text-tertiary flex items-center space-x-1 font-medium">
+        <Clock className="w-3.5 h-3.5 text-text-tertiary" />
+        <span>Rolling</span>
       </span>
     );
   }
@@ -15,14 +15,19 @@ export function DeadlineCountdown({ deadline }: { deadline?: string | null }) {
   const daysLeft = Math.ceil((new Date(deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 
   if (daysLeft < 0) {
-    return <span className="text-[10px] text-text-tertiary font-mono">Deadline passed</span>;
+    return <span className="text-[11px] text-text-tertiary font-medium">Deadline passed</span>;
   }
 
-  const colorClass = daysLeft <= 2 ? 'text-red-400 font-bold' : daysLeft <= 6 ? 'text-amber-400 font-semibold' : 'text-emerald-400';
+  const colorClass =
+    daysLeft <= 2
+      ? 'text-rose-600 font-semibold'
+      : daysLeft <= 6
+        ? 'text-amber-600 font-semibold'
+        : 'text-emerald-700 font-medium';
 
   return (
-    <span className={`text-[10px] flex items-center space-x-1 font-mono ${colorClass}`}>
-      <Clock className="w-3 h-3" />
+    <span className={`text-[11px] flex items-center space-x-1 ${colorClass}`}>
+      <Clock className="w-3.5 h-3.5" />
       <span>Closes in {daysLeft}d</span>
     </span>
   );

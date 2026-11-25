@@ -32,14 +32,8 @@ export function WatchlistClient({ initialWatchlists }: WatchlistClientProps) {
 
     setLoading(true);
     try {
-      const keywordsArray = keywords
-        .split(',')
-        .map((k) => k.trim())
-        .filter(Boolean);
-      const locationsArray = locations
-        .split(',')
-        .map((l) => l.trim())
-        .filter(Boolean);
+      const keywordsArray = keywords.split(',').map((k) => k.trim()).filter(Boolean);
+      const locationsArray = locations.split(',').map((l) => l.trim()).filter(Boolean);
 
       const res = await fetch('/api/watchlists', {
         method: 'POST',
@@ -79,73 +73,77 @@ export function WatchlistClient({ initialWatchlists }: WatchlistClientProps) {
   };
 
   return (
-    <main className="min-h-screen max-w-4xl mx-auto p-4 pt-10 pb-20 text-gray-200">
-      <header className="mb-8">
-        <h1 className="text-3xl font-extrabold text-white flex items-center gap-2 mb-2">
-          <Bell className="text-accent-500" />
-          Job Watchlists
+    <div className="w-full max-w-5xl mx-auto space-y-6">
+      <header className="pb-4 border-b border-border-subtle">
+        <h1 className="text-2xl font-display font-extrabold text-text-primary flex items-center gap-2">
+          <Bell className="w-6 h-6 text-accent-500" />
+          <span>Job Watchlists</span>
         </h1>
-        <p className="text-gray-400">
-          Create watchlists to track matches and get automatic deadline calendar events when new jobs open.
+        <p className="text-xs sm:text-sm text-text-secondary mt-1">
+          Create keyword & location alerts and automatically sync new matches to Google Calendar.
         </p>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Watchlist creation form */}
-        <section className="bg-bg-surface border border-white/5 rounded-xl p-5 h-fit md:col-span-1 shadow-xl">
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+        <section className="bg-bg-surface border border-border-subtle rounded-2xl p-5 h-fit md:col-span-1 shadow-2xs">
+          <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider mb-4 flex items-center gap-2">
             <Plus size={16} className="text-accent-500" />
             Create Watchlist
-          </h3>
+          </h2>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
-              <label className="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5 font-semibold">
+              <label htmlFor="wl-name" className="block text-[11px] text-text-secondary font-semibold mb-1.5">
                 Watchlist Name
               </label>
               <input
+                id="wl-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g., SDE Bangalore Interns"
-                className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-sm text-gray-200 focus:outline-none focus:border-accent-500 transition-colors"
+                className="w-full bg-bg-elevated/60 border border-border-subtle rounded-xl p-2.5 text-sm text-text-primary focus:outline-none focus:border-accent-500 focus:bg-white transition-colors"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5 font-semibold">
+              <label htmlFor="wl-keywords" className="block text-[11px] text-text-secondary font-semibold mb-1.5">
                 Keywords (comma separated)
               </label>
               <input
+                id="wl-keywords"
                 type="text"
                 value={keywords}
                 onChange={(e) => setKeywords(e.target.value)}
-                placeholder="React, node, django"
-                className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-sm text-gray-200 focus:outline-none focus:border-accent-500 transition-colors"
+                placeholder="React, Node, Python"
+                className="w-full bg-bg-elevated/60 border border-border-subtle rounded-xl p-2.5 text-sm text-text-primary focus:outline-none focus:border-accent-500 focus:bg-white transition-colors"
               />
             </div>
 
             <div>
-              <label className="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5 font-semibold">
+              <label htmlFor="wl-locations" className="block text-[11px] text-text-secondary font-semibold mb-1.5">
                 Locations (comma separated)
               </label>
               <input
+                id="wl-locations"
                 type="text"
                 value={locations}
                 onChange={(e) => setLocations(e.target.value)}
-                placeholder="Bangalore, remote"
-                className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-sm text-gray-200 focus:outline-none focus:border-accent-500 transition-colors"
+                placeholder="Bengaluru, Remote"
+                className="w-full bg-bg-elevated/60 border border-border-subtle rounded-xl p-2.5 text-sm text-text-primary focus:outline-none focus:border-accent-500 focus:bg-white transition-colors"
               />
             </div>
 
             <div>
-              <label className="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5 font-semibold">
+              <label htmlFor="wl-type" className="block text-[11px] text-text-secondary font-semibold mb-1.5">
                 Employment Type
               </label>
               <select
+                id="wl-type"
                 value={employmentType}
                 onChange={(e) => setEmploymentType(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-sm text-gray-200 focus:outline-none focus:border-accent-500 transition-colors"
+                className="w-full bg-bg-elevated/60 border border-border-subtle rounded-xl p-2.5 text-sm text-text-primary focus:outline-none focus:border-accent-500 focus:bg-white transition-colors"
               >
                 <option value="any">Any Type</option>
                 <option value="internship">Internship</option>
@@ -158,7 +156,7 @@ export function WatchlistClient({ initialWatchlists }: WatchlistClientProps) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-accent-500 hover:bg-accent-600 text-white font-bold text-sm py-2.5 rounded-lg transition-colors mt-2"
+              className="w-full bg-accent-500 hover:bg-accent-600 text-white font-semibold text-sm py-2.5 rounded-xl transition-colors shadow-xs"
             >
               {loading ? 'Creating...' : 'Create Watchlist'}
             </button>
@@ -167,20 +165,20 @@ export function WatchlistClient({ initialWatchlists }: WatchlistClientProps) {
 
         {/* Watchlist display list */}
         <section className="md:col-span-2 flex flex-col gap-4">
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+          <h2 className="text-xs font-bold text-text-tertiary uppercase tracking-wider">
             Active Watchlists ({watchlists.length})
-          </h3>
+          </h2>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3.5">
             <AnimatePresence mode="wait">
               {watchlists.length === 0 ? (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="border border-dashed border-white/5 rounded-xl p-10 text-center text-gray-500"
+                  className="bg-bg-surface border border-dashed border-border-default rounded-2xl p-10 text-center text-xs text-text-tertiary"
                 >
-                  No watchlists configured yet. Create one on the left to start tracking match alerts.
+                  No watchlists configured yet. Create one on the left to start tracking matches.
                 </motion.div>
               ) : (
                 watchlists.map((wl) => (
@@ -190,34 +188,34 @@ export function WatchlistClient({ initialWatchlists }: WatchlistClientProps) {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className="job-card bg-bg-surface border border-white/5 p-5 rounded-xl flex justify-between items-start gap-4 transition-all"
+                    className="job-card p-5 flex justify-between items-start gap-4"
                   >
                     <div className="flex-1 flex flex-col gap-3">
                       <div>
-                        <h4 className="text-lg font-bold text-white flex items-center gap-2">
+                        <h3 className="text-base font-display font-bold text-text-primary flex items-center gap-2">
                           {wl.name}
-                          <span className="w-2 h-2 rounded-full bg-emerald-400" title="Active" />
-                        </h4>
-                        <span className="text-[10px] text-gray-500 uppercase tracking-wider">
-                          Created {new Date(wl.created_at).toLocaleDateString()}
+                          <span className="w-2 h-2 rounded-full bg-emerald-500" title="Active" />
+                        </h3>
+                        <span className="text-[11px] text-text-tertiary">
+                          Created {new Date(wl.created_at).toLocaleDateString('en-IN')}
                         </span>
                       </div>
 
                       <div className="flex flex-wrap gap-2 text-xs">
                         {wl.keywords && wl.keywords.length > 0 && (
-                          <span className="flex items-center gap-1 bg-white/5 border border-white/5 px-2.5 py-1 rounded-md text-gray-300">
+                          <span className="flex items-center gap-1.5 bg-bg-elevated border border-border-subtle px-2.5 py-1 rounded-lg text-text-secondary font-medium">
                             <Tag size={12} className="text-accent-500" />
                             {wl.keywords.join(', ')}
                           </span>
                         )}
                         {wl.locations && wl.locations.length > 0 && (
-                          <span className="flex items-center gap-1 bg-white/5 border border-white/5 px-2.5 py-1 rounded-md text-gray-300">
+                          <span className="flex items-center gap-1.5 bg-bg-elevated border border-border-subtle px-2.5 py-1 rounded-lg text-text-secondary font-medium">
                             <MapPin size={12} className="text-accent-500" />
                             {wl.locations.join(', ')}
                           </span>
                         )}
                         {wl.employment_type && wl.employment_type !== 'any' && (
-                          <span className="flex items-center gap-1 bg-white/5 border border-white/5 px-2.5 py-1 rounded-md text-gray-300 capitalize">
+                          <span className="flex items-center gap-1.5 bg-bg-elevated border border-border-subtle px-2.5 py-1 rounded-lg text-text-secondary capitalize font-medium">
                             <Briefcase size={12} className="text-accent-500" />
                             {wl.employment_type.replace('_', ' ')}
                           </span>
@@ -227,8 +225,9 @@ export function WatchlistClient({ initialWatchlists }: WatchlistClientProps) {
 
                     <button
                       onClick={() => handleDelete(wl.id)}
-                      className="p-2 border border-red-500/10 hover:border-red-500/30 bg-red-500/5 hover:bg-red-500/10 text-red-400 rounded-lg transition-all flex-shrink-0"
+                      className="p-2 border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition-all shrink-0"
                       title="Delete Watchlist"
+                      aria-label="Delete watchlist"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -239,6 +238,6 @@ export function WatchlistClient({ initialWatchlists }: WatchlistClientProps) {
           </div>
         </section>
       </div>
-    </main>
+    </div>
   );
 }
